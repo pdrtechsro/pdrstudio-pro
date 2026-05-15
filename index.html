@@ -814,7 +814,7 @@ function doSave(){
     ?{...base,totalAmount:+gv('inp-famount')||0,forfaitRef:gv('inp-fref').trim(),panels:null,calcDetail:null,manualOverride:false}
     :{...base,totalAmount:finalTotal,forfaitRef:'',panels:JSON.parse(JSON.stringify(PS)),calcDetail:{matPrice:r.matPrice,matWithCoeff:r.matWithCoeff,cpTotal:r.cpTotal,degPrice:r.degPrice,bolli:r.bolli,col:r.col,coeff:r.coeff,calcTotal:r.total},manualOverride:useManual};
   if(editId)practices=practices.filter(p=>p.id!==editId);
-  practices.unshift(pr);save();editId=null;doReset();renderTable();toast(T('savedOk'));
+  practices.unshift(pr);save();cloudUpsertPractice(pr);editId=null;doReset();renderTable();toast(T('savedOk'));
 }
 g('btn-save').addEventListener('click',doSave);
 g('btn-save2').addEventListener('click',doSave);
@@ -1023,18 +1023,18 @@ function renderDetail(id){
         practices[i].repairDate='';
         practices[i].billingStatus='';
       }
-      practices[i].updatedAt=now();save();renderTable();renderDetail(id);
+      practices[i].updatedAt=now();save();cloudUpsertPractice(practices[i]);renderTable();renderDetail(id);
     });
     rb.appendChild(b);
   });
   const bb=g('det-bill-btns');
   if(p.repairStatus!=='Riparata'){const sp=document.createElement('span');sp.className='tag';sp.style.color='var(--mu)';sp.textContent=T('notAvail');bb.appendChild(sp);}
-  else{[['Non fatturata',T('billNone')],['Fatturata',T('billInv')],['Saldata',T('billPaid')]].forEach(([real,lbl])=>{const b=document.createElement('button');b.className='btn sm'+(p.billingStatus===real?(real==='Saldata'?' ok':' primary'):'');b.textContent=lbl;b.addEventListener('click',()=>{const i=practices.findIndex(x=>x.id===id);if(i<0)return;practices[i].billingStatus=real;practices[i].updatedAt=now();save();renderTable();renderDetail(id);});bb.appendChild(b);});}
+  else{[['Non fatturata',T('billNone')],['Fatturata',T('billInv')],['Saldata',T('billPaid')]].forEach(([real,lbl])=>{const b=document.createElement('button');b.className='btn sm'+(p.billingStatus===real?(real==='Saldata'?' ok':' primary'):'');b.textContent=lbl;b.addEventListener('click',()=>{const i=practices.findIndex(x=>x.id===id);if(i<0)return;practices[i].billingStatus=real;practices[i].updatedAt=now();save();cloudUpsertPractice(practices[i]);renderTable();renderDetail(id);});bb.appendChild(b);});}
   const ab=g('det-act-btns');
   const mkB=(lbl,cls,cb)=>{const b=document.createElement('button');b.className='btn sm '+cls;b.textContent=lbl;b.addEventListener('click',cb);ab.appendChild(b);};
   mkB(T('dlPdf'),'primary',()=>downloadPdf(p));
   mkB(T('editP'),'',()=>{goTo('v-prev');editId=id;g('inp-lp').value=p.plate||'';g('inp-lv').value=p.vin||'';g('pform-wrap').classList.remove('hidden');fillFrom(p);g('edit-notice').classList.remove('hidden');});
-  mkB(T('delP'),'danger',()=>{if(!confirm(T('confirmDelP')))return;practices=practices.filter(x=>x.id!==id);activeId=null;save();renderTable();g('detail-box').classList.add('hidden');});
+  mkB(T('delP'),'danger',()=>{if(!confirm(T('confirmDelP')))return;practices=practices.filter(x=>x.id!==id);activeId=null;save();cloudDeletePractice(id);renderTable();g('detail-box').classList.add('hidden');});
   // V9: data riparazione modificabile inline
   const rdInp=g('edit-rdate-'+id);
   if(rdInp){
@@ -1042,8 +1042,7 @@ function renderDetail(id){
       const i=practices.findIndex(x=>x.id===id);if(i<0)return;
       practices[i].repairDate=rdInp.value||'';
       practices[i].updatedAt=now();
-      save();renderTable();
-      // non rifaccio renderDetail per evitare loss focus, ma sincronizzo eventuale dashboard
+      save();cloudUpsertPractice(practices[i]);renderTable();
     });
   }
 }
@@ -1170,7 +1169,7 @@ g('btn-savecli').addEventListener('click',()=>{
   if(cliType==='privato'){name=(gv('inp-cfname')+' '+gv('inp-clname')).trim();rec={id:uid(),type:'privato',name,phone:gv('inp-cphone').trim(),email:gv('inp-cemail').trim(),addr:gv('inp-caddr_p').trim(),cap:gv('inp-ccap_p').trim(),city:gv('inp-ccity').trim(),notes:gv('inp-cnotes').trim(),company:'',contact:'',vat:'',country:''};}
   else{name=gv('inp-cco').trim();rec={id:uid(),type:'azienda',name,company:name,contact:gv('inp-ccontact').trim(),phone:gv('inp-cphone2').trim(),email:gv('inp-cemail2').trim(),vat:gv('inp-cvat').trim(),addr:gv('inp-caddr').trim(),cap:gv('inp-ccap2').trim(),city:gv('inp-ccity2').trim(),country:gv('inp-ccountry2').trim(),notes:gv('inp-cnotes2').trim()};}
   if(clients.some(c=>c.name.toLowerCase()===name.toLowerCase())){toast(T('errReq'));return;}
-  clients.unshift(rec);save();
+  clients.unshift(rec);save();cloudUpsertClient(rec);
   ['inp-cfname','inp-clname','inp-cphone','inp-cemail','inp-caddr_p','inp-ccap_p','inp-ccity','inp-cnotes','inp-cco','inp-ccontact','inp-cphone2','inp-cemail2','inp-cvat','inp-caddr','inp-ccap2','inp-ccity2','inp-ccountry2','inp-cnotes2'].forEach(id=>{if(g(id))g(id).value='';});
   renderClients();toast(T('cliSaved'));
 });
@@ -1184,7 +1183,7 @@ function renderClients(){
     info.innerHTML='<strong>'+c.name+'</strong>'+(sub?'<span style="color:var(--mu);font-size:12px"> · '+sub+'</span>':'');
     const btns=document.createElement('div');btns.style.cssText='display:flex;gap:6px';
     const bU=document.createElement('button');bU.className='btn sm';bU.textContent=T('use');bU.addEventListener('click',()=>{goTo('v-prev');if(g('inp-cust'))g('inp-cust').value=c.name;});
-    const bD=document.createElement('button');bD.className='btn sm danger';bD.textContent='✕';bD.addEventListener('click',()=>{if(!confirm(T('confirmDelC')))return;clients=clients.filter(x=>x.id!==c.id);save();renderClients();});
+    const bD=document.createElement('button');bD.className='btn sm danger';bD.textContent='✕';bD.addEventListener('click',()=>{if(!confirm(T('confirmDelC')))return;clients=clients.filter(x=>x.id!==c.id);save();cloudDeleteClient(c.id);renderClients();});
     btns.appendChild(bU);btns.appendChild(bD);row.appendChild(info);row.appendChild(btns);box.appendChild(row);
   });
 }
@@ -1201,9 +1200,9 @@ function renderCampaigns(){
     info.innerHTML='<strong>'+c.name+'</strong><div style="font-size:11px;color:var(--mu);margin-top:2px">'+fmtDate(c.start)+' → '+(c.end?fmtDate(c.end):'in corso')+' · '+cnt+' pratiche</div>';
     const btns=document.createElement('div');btns.style.cssText='display:flex;gap:6px';
     const bC=document.createElement('button');bC.className='btn sm';bC.textContent=c.end?'Riapri':'Chiudi';
-    bC.addEventListener('click',()=>{if(c.end){c.end='';}else{const d=prompt('Data di chiusura (GG/MM/AAAA):',new Date().toLocaleDateString('it-IT'));if(!d)return;const parts=d.split('/');if(parts.length!==3){toast('Formato data non valido');return;}c.end=parts[2]+'-'+parts[1].padStart(2,'0')+'-'+parts[0].padStart(2,'0');}save();renderCampaigns();fillPracticeCampaignOptions();});
+    bC.addEventListener('click',()=>{if(c.end){c.end='';}else{const d=prompt('Data di chiusura (GG/MM/AAAA):',new Date().toLocaleDateString('it-IT'));if(!d)return;const parts=d.split('/');if(parts.length!==3){toast('Formato data non valido');return;}c.end=parts[2]+'-'+parts[1].padStart(2,'0')+'-'+parts[0].padStart(2,'0');}save();cloudUpsertCampaign(c);renderCampaigns();fillPracticeCampaignOptions();});
     const bD=document.createElement('button');bD.className='btn sm danger';bD.textContent='✕';
-    bD.addEventListener('click',()=>{if(!confirm('Eliminare il ciclo "'+c.name+'"? Le pratiche assegnate verranno scollegate.'))return;campaigns=campaigns.filter(x=>x.id!==c.id);practices.forEach(p=>{if(p.campaignId===c.id)p.campaignId='';});save();renderCampaigns();fillPracticeCampaignOptions();});
+    bD.addEventListener('click',()=>{if(!confirm('Eliminare il ciclo "'+c.name+'"? Le pratiche assegnate verranno scollegate.'))return;campaigns=campaigns.filter(x=>x.id!==c.id);practices.forEach(p=>{if(p.campaignId===c.id){p.campaignId='';cloudUpsertPractice(p);}});save();cloudDeleteCampaign(c.id);renderCampaigns();fillPracticeCampaignOptions();});
     btns.appendChild(bC);btns.appendChild(bD);
     row.appendChild(info);row.appendChild(btns);box.appendChild(row);
   });
@@ -1220,8 +1219,9 @@ if(_g_btn_addcamp)_g_btn_addcamp.addEventListener('click',()=>{
   const start=gv('inp-campstart');
   const end=gv('inp-campend');
   if(!name||!start){toast('Nome e data inizio obbligatori');return;}
-  campaigns.push({id:uid(),name,start,end:end||''});
-  save();
+  const newCamp={id:uid(),name,start,end:end||''};
+  campaigns.push(newCamp);
+  save();cloudUpsertCampaign(newCamp);
   g('inp-campname').value='';g('inp-campstart').value='';g('inp-campend').value='';
   renderCampaigns();fillPracticeCampaignOptions();
   toast('Ciclo creato');
@@ -1236,7 +1236,7 @@ g('inp-model').addEventListener('input',drawModels);g('inp-model').addEventListe
 g('inp-color').addEventListener('input',()=>{const v=gv('inp-color').toLowerCase();drawSug('sug-color',COLORS.filter(c=>c.toLowerCase().includes(v)),val=>{g('inp-color').value=val;});});
 g('inp-color').addEventListener('focus',()=>drawSug('sug-color',COLORS,val=>{g('inp-color').value=val;}));
 function allInsurances(){const set=new Set([...INSURANCES,...customInsurances.filter(Boolean)]);return [...set].sort((a,b)=>a.localeCompare(b));}
-function rememberInsurance(name){if(!name)return;const n=name.trim();if(!n)return;const exists=[...INSURANCES,...customInsurances].some(x=>x.toLowerCase()===n.toLowerCase());if(!exists){customInsurances.push(n);save();}}
+function rememberInsurance(name){if(!name)return;const n=name.trim();if(!n)return;const exists=[...INSURANCES,...customInsurances].some(x=>x.toLowerCase()===n.toLowerCase());if(!exists){customInsurances.push(n);save();cloudAddInsurance(n);}}
 if(g('inp-ins')){
   g('inp-ins').addEventListener('input',()=>{const v=gv('inp-ins').toLowerCase();drawSug('sug-ins',allInsurances().filter(c=>c.toLowerCase().includes(v)),val=>{g('inp-ins').value=val;});});
   g('inp-ins').addEventListener('focus',()=>drawSug('sug-ins',allInsurances(),val=>{g('inp-ins').value=val;}));
@@ -1267,9 +1267,9 @@ g('btn-saveset').addEventListener('click',()=>{
   ['company','tech','email','phone','vat','addr','cap','city','country','footer'].forEach(k=>{if(g('set-'+k))settings[k]=g('set-'+k).value;});
   settings.uiLang=gv('set-uilang')||'IT';settings.pdfLang=gv('set-pdflang')||'IT';settings.theme=gv('set-theme')||'light';settings.coeff=+gv('coeff-input')||1;
   deg.A=+gv('deg-A-set')||0;deg.B=+gv('deg-B-set')||0;deg.C=+gv('deg-C-set')||0;
-  save();applyTheme(settings.theme);applyI18n();toast((DICT[settings.uiLang]||DICT.IT).setsSaved);
+  save();cloudSaveSettings();applyTheme(settings.theme);applyI18n();toast((DICT[settings.uiLang]||DICT.IT).setsSaved);
 });
-g('btn-clearall').addEventListener('click',()=>{if(!confirm(T('confirmClear')))return;practices=[];clients=[];campaigns=[];customInsurances=[];save();renderTable();g('detail-box').classList.add('hidden');activeId=null;toast(T('dataCleared'));});
+g('btn-clearall').addEventListener('click',async()=>{if(!confirm(T('confirmClear')))return;practices=[];clients=[];campaigns=[];customInsurances=[];save();await cloudWipeAll();renderTable();g('detail-box').classList.add('hidden');activeId=null;toast(T('dataCleared'));});
 
 /* ═══════════════ AUTH ═══════════════ */
 let authMode='login'; // 'login' | 'signup' | 'forgot'
@@ -1363,8 +1363,12 @@ async function onAuthenticated(user){
   document.getElementById('user-email').textContent=user.email||'';
   showApp();
   setSyncStatus('busy','sync…');
+  // 1. carica coda pendente da localStorage
+  loadPendingQueue();
+  // 2. flush coda (operazioni offline da sincronizzare)
+  if(pendingSync.length)await flushQueue();
+  // 3. pull completo dal cloud (fonte di verità)
   await cloudPullAll();
-  setSyncStatus('ok','sync ok');
   // continuo init normale dopo auth
   applyTheme(settings.theme||'dark');initPS();applyI18n();renderDegBtns();
   if(g('inp-date'))g('inp-date').value=today();
@@ -1372,18 +1376,155 @@ async function onAuthenticated(user){
   renderTable();renderClients();
 }
 
-/* ═══════════════ CLOUD SYNC (placeholder iniziale) ═══════════════ */
-// Layer di sync iniziale: per ora carico i dati esistenti su localStorage
-// (se ci sono) e ascolto login/logout. Il sync completo lato cloud verrà
-// completato nella prossima iterazione.
+/* ═══════════════ CLOUD SYNC ═══════════════ */
+// Strategia: 1b/2b/3a/4a
+// - Salvataggio cloud al click "Salva" (non auto-save)
+// - Offline → queue locale → sync quando torna online
+// - All'apertura: pull completo dal cloud (cloud = fonte di verità)
+
+let pendingSync=[]; // coda operazioni offline {op:'upsert'|'delete', table, id, data}
+const PSK='pdrstudio_pending_sync';
+
+function loadPendingQueue(){
+  try{pendingSync=JSON.parse(localStorage.getItem(PSK)||'[]');}catch(e){pendingSync=[];}
+}
+function savePendingQueue(){
+  try{localStorage.setItem(PSK,JSON.stringify(pendingSync));}catch(e){}
+}
+function isOnline(){return navigator.onLine!==false;}
+
+// Aggiunge operazione in coda + tenta sync immediato se online
+async function enqueueOp(op){
+  pendingSync.push(op);
+  savePendingQueue();
+  if(isOnline()&&currentUser)await flushQueue();
+}
+
+async function flushQueue(){
+  if(!supa||!currentUser||!pendingSync.length)return;
+  setSyncStatus('busy','sync…');
+  const queue=[...pendingSync];
+  for(const op of queue){
+    try{
+      if(op.op==='upsert'){
+        const row={id:op.id,user_id:currentUser.id,data:op.data};
+        const {error}=await supa.from(op.table).upsert(row);
+        if(error)throw error;
+      }else if(op.op==='upsertInsurance'){
+        const {error}=await supa.from('custom_insurances').upsert({user_id:currentUser.id,name:op.name},{onConflict:'user_id,name'});
+        if(error)throw error;
+      }else if(op.op==='delete'){
+        const {error}=await supa.from(op.table).delete().eq('id',op.id);
+        if(error)throw error;
+      }else if(op.op==='upsertSettings'){
+        const {error}=await supa.from('user_settings').upsert({user_id:currentUser.id,settings:op.settings,matrix:op.matrix,deg:op.deg});
+        if(error)throw error;
+      }
+      // operazione completata, rimuovo dalla coda
+      pendingSync=pendingSync.filter(x=>x!==op);
+      savePendingQueue();
+    }catch(e){
+      console.error('Sync op failed:',op,e);
+      setSyncStatus('err','errore sync');
+      return; // mi fermo, riproverò dopo
+    }
+  }
+  setSyncStatus('ok',pendingSync.length?'pending':'sync ok');
+}
+
+// Pull completo dal cloud (chiamato al login)
 async function cloudPullAll(){
-  // Per ora: load locale - nelle prossime versioni: pull da Supabase
-  load();
+  if(!supa||!currentUser){load();return;}
+  setSyncStatus('busy','caricamento…');
+  try{
+    const [pr,cl,cm,ins,st]=await Promise.all([
+      supa.from('practices').select('id,data,updated_at').eq('user_id',currentUser.id).order('updated_at',{ascending:false}),
+      supa.from('clients').select('id,data,updated_at').eq('user_id',currentUser.id).order('updated_at',{ascending:false}),
+      supa.from('campaigns').select('id,data,updated_at').eq('user_id',currentUser.id),
+      supa.from('custom_insurances').select('name').eq('user_id',currentUser.id),
+      supa.from('user_settings').select('*').eq('user_id',currentUser.id).maybeSingle()
+    ]);
+    if(pr.error)throw pr.error;
+    if(cl.error)throw cl.error;
+    if(cm.error)throw cm.error;
+    if(ins.error)throw ins.error;
+    if(st.error)throw st.error;
+    // popolo lo stato dal cloud
+    practices=(pr.data||[]).map(r=>({...r.data,id:r.id}));
+    clients=(cl.data||[]).map(r=>({...r.data,id:r.id}));
+    campaigns=(cm.data||[]).map(r=>({...r.data,id:r.id}));
+    customInsurances=(ins.data||[]).map(r=>r.name);
+    if(st.data){
+      if(st.data.settings)settings={...settings,...st.data.settings};
+      if(st.data.matrix&&Array.isArray(st.data.matrix)&&st.data.matrix.length===DEFAULT_MATRIX.length)matrix=st.data.matrix;
+      if(st.data.deg)deg={...deg,...st.data.deg};
+    }
+    // salvo anche in localStorage come cache locale
+    save();
+    setSyncStatus('ok','sync ok');
+  }catch(e){
+    console.error('Pull error:',e);
+    setSyncStatus('err','errore');
+    // fallback: carico cache locale
+    load();
+  }
 }
-async function cloudPushAll(){
-  // Per ora: save locale - nelle prossime versioni: push su Supabase
-  save();
+
+// Push singola pratica al cloud
+async function cloudUpsertPractice(p){
+  if(!currentUser)return;
+  await enqueueOp({op:'upsert',table:'practices',id:p.id,data:p});
 }
+async function cloudDeletePractice(id){
+  if(!currentUser)return;
+  await enqueueOp({op:'delete',table:'practices',id});
+}
+async function cloudUpsertClient(c){
+  if(!currentUser)return;
+  await enqueueOp({op:'upsert',table:'clients',id:c.id,data:c});
+}
+async function cloudDeleteClient(id){
+  if(!currentUser)return;
+  await enqueueOp({op:'delete',table:'clients',id});
+}
+async function cloudUpsertCampaign(c){
+  if(!currentUser)return;
+  await enqueueOp({op:'upsert',table:'campaigns',id:c.id,data:c});
+}
+async function cloudDeleteCampaign(id){
+  if(!currentUser)return;
+  await enqueueOp({op:'delete',table:'campaigns',id});
+}
+async function cloudAddInsurance(name){
+  if(!currentUser||!name)return;
+  await enqueueOp({op:'upsertInsurance',name});
+}
+async function cloudSaveSettings(){
+  if(!currentUser)return;
+  await enqueueOp({op:'upsertSettings',settings:{...settings},matrix:[...matrix],deg:{...deg}});
+}
+
+// "Cancella tutto" cloud (chiamato dal pulsante reset)
+async function cloudWipeAll(){
+  if(!supa||!currentUser)return;
+  setSyncStatus('busy','wipe…');
+  try{
+    await Promise.all([
+      supa.from('practices').delete().eq('user_id',currentUser.id),
+      supa.from('clients').delete().eq('user_id',currentUser.id),
+      supa.from('campaigns').delete().eq('user_id',currentUser.id),
+      supa.from('custom_insurances').delete().eq('user_id',currentUser.id)
+    ]);
+    setSyncStatus('ok','sync ok');
+  }catch(e){
+    console.error('Wipe error:',e);
+    setSyncStatus('err','errore');
+  }
+}
+
+// Listener online/offline
+window.addEventListener('online',()=>{if(currentUser){setSyncStatus('busy','sync…');flushQueue();}});
+window.addEventListener('offline',()=>setSyncStatus('err','offline'));
 
 /* ═══════════════ INIT ═══════════════ */
 async function init(){
