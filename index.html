@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="it" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="PDR Studio Pro"/>
+<meta name="theme-color" content="#4f63ff"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<title>PDR Studio Pro</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#f4f6fb;--sf:#fff;--sf2:#f0f3f9;--tx:#0f172a;--mu:#64748b;--bd:#e2e8f0;--pr:#4f63ff;--pl:#eef0ff;--ok:#16a34a;--okl:#dcfce7;--wn:#d97706;--wl:#fef3c7;--dg:#dc2626;--dl:#fee2e2;--rd:14px;--rs:10px}
+[data-theme=dark]{--bg:#0d1117;--sf:#161b27;--sf2:#1e2535;--tx:#e2e8f0;--mu:#94a3b8;--bd:#2a3349;--pr:#6878ff;--pl:#1e2040;--ok:#22c55e;--okl:#052e16;--wn:#fbbf24;--wl:#2d1f00;--dg:#f87171;--dl:#2d0a0a}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--tx);font-family:Inter,system-ui,sans-serif;font-size:14px;overscroll-behavior:none}
+body{-webkit-tap-highlight-color:transparent}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:none;background:none}
+.hidden{display:none!important}
+.app{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--sf);border-bottom:1px solid var(--bd);flex-shrink:0;padding-top:max(10px,env(safe-area-inset-top))}
+.brand{display:flex;align-items:center;gap:10px}
+.logo-text{display:inline-flex;align-items:baseline;font-family:Inter,system-ui,sans-serif;font-size:22px;letter-spacing:.5px;color:var(--pr);user-select:none}
+.logo-text .lt-b{font-weight:800}
+.logo-text .lt-l{font-weight:200;margin-left:2px}
+.brand-text h1{font-size:15px;font-weight:600;line-height:1.2}
+.brand-text p{font-size:11px;color:var(--mu)}
+.icon-btn{width:34px;height:34px;border-radius:8px;background:var(--sf2);border:1px solid var(--bd);display:grid;place-items:center;color:var(--mu);cursor:pointer}
+.content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+.bnav{display:flex;background:var(--sf);border-top:1px solid var(--bd);flex-shrink:0;padding-bottom:env(safe-area-inset-bottom)}
+.bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:8px 4px;color:var(--mu);font-size:10px;font-weight:600;border-right:1px solid var(--bd);cursor:pointer;background:none;border-top:none;border-bottom:none;border-left:none}
+.bnav-btn:last-child{border-right:none}
+.bnav-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.bnav-btn.active{color:var(--pr);background:var(--pl)}
+.view{display:none;padding:14px;max-width:960px;margin:0 auto}
+.view.active{display:block}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--rd);padding:16px;margin-bottom:14px}
+.card-title{font-size:14px;font-weight:600;margin-bottom:4px}
+.card-sub{font-size:12px;color:var(--mu);margin-bottom:12px}
+.fg{display:grid;gap:10px;grid-template-columns:repeat(2,1fr);margin-bottom:10px}
+.fg.c3{grid-template-columns:repeat(3,1fr)}
+.field label{display:block;font-size:11px;font-weight:600;color:var(--mu);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
+.field input,.field select,.field textarea{width:100%;border:1px solid var(--bd);background:var(--sf2);border-radius:var(--rs);padding:9px 11px;outline:none;transition:.15s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--pr)}
+.field textarea{min-height:64px;resize:vertical}
+.sp2{grid-column:1/-1}
+.field.invalid input,.field.invalid select{border-color:var(--dg)!important}
+.field .err{font-size:11px;color:var(--dg);margin-top:3px;display:none}
+.field.invalid .err{display:block}
+.btn{padding:9px 16px;border-radius:var(--rs);font-weight:600;font-size:13px;border:1px solid var(--bd);background:var(--sf2);color:var(--tx);cursor:pointer;transition:.15s}
+.btn:hover{background:var(--bd)}
+.btn.primary{background:var(--pr);color:#fff;border-color:transparent}
+.btn.danger{background:var(--dg);color:#fff;border-color:transparent}
+.btn.ok{background:var(--ok);color:#fff;border-color:transparent}
+.btn.sm{padding:6px 11px;font-size:12px}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center;margin-top:12px}
+.tag{display:inline-flex;align-items:center;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:600}
+.tag.green{background:var(--okl);color:var(--ok)}
+.tag.amber{background:var(--wl);color:var(--wn)}
+.tag.red{background:var(--dl);color:var(--dg)}
+.tag.blue{background:var(--pl);color:var(--pr)}
+.tbl-wrap{overflow-x:auto;border-radius:var(--rd);border:1px solid var(--bd)}
+table{width:100%;border-collapse:collapse;min-width:540px}
+th{background:var(--sf2);font-size:11px;font-weight:600;color:var(--mu);text-transform:uppercase;letter-spacing:.05em;padding:9px 12px;text-align:left;border-bottom:1px solid var(--bd)}
+td{padding:9px 12px;border-bottom:1px solid var(--bd);font-size:13px}
+tr:last-child td{border-bottom:none}
+tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--sf2)}tr.sel td{background:var(--pl)}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.kpi-sub{font-size:13px;color:var(--tx);font-weight:600;margin-top:3px}
+.inline-date{background:transparent;border:1px dashed var(--bd);border-radius:6px;padding:2px 6px;font-size:13px;color:var(--tx);font-family:inherit;cursor:pointer;transition:.15s;font-weight:600}
+.inline-date:hover{border-color:var(--pr);background:var(--pl)}
+.inline-date:focus{outline:none;border-color:var(--pr);border-style:solid;background:var(--pl)}
+.kpi-card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--rs);padding:14px 16px}
+.kpi-label{font-size:11px;color:var(--mu);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+.kpi-value{font-size:22px;font-weight:700;line-height:1}
+.sw-wrap{position:relative}
+.sw-box{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:50;background:var(--sf);border:1px solid var(--bd);border-radius:var(--rs);box-shadow:0 4px 16px rgba(0,0,0,.12);max-height:200px;overflow-y:auto}
+.sw-item{padding:9px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--bd)}
+.sw-item:last-child{border-bottom:none}
+.sw-item:hover{background:var(--sf2)}
+.mode-sw{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.mode-btn{padding:10px;border-radius:var(--rs);font-weight:600;font-size:13px;border:1px solid var(--bd);background:var(--sf2);color:var(--mu);cursor:pointer}
+.mode-btn.active{background:var(--pr);color:#fff;border-color:transparent}
+.panel-item{border:1px solid var(--bd);border-radius:var(--rs);padding:12px;margin-bottom:8px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
+.panel-left{display:flex;flex-direction:column;gap:6px}
+.panel-name{font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px}
+.panel-controls{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.bolli-input{width:76px;padding:7px 8px;border:1.5px solid var(--bd);background:var(--sf2);border-radius:8px;text-align:center;font-weight:700;font-size:14px}
+.bolli-input:focus{outline:none;border-color:var(--pr)}
+.pill{padding:5px 11px;border-radius:999px;font-size:11px;font-weight:700;border:1.5px solid var(--bd);background:var(--sf2);color:var(--mu);cursor:pointer;transition:.12s}
+.pill.p-dsp{background:var(--pr);color:#fff;border-color:transparent}
+.pill.p-dap{background:#7c3aed;color:#fff;border-color:transparent}
+.pill.p-cp{background:var(--dg);color:#fff;border-color:transparent}
+.pill.p-alu{background:var(--wn);color:#fff;border-color:transparent}
+.alu-badge{background:var(--wl);color:var(--wn);border:1px solid var(--wn);border-radius:6px;font-size:10px;font-weight:700;padding:1px 6px}
+.panel-right{text-align:right;min-width:70px}
+.panel-price{font-size:15px;font-weight:700;color:var(--pr)}
+.panel-hint-r{font-size:10px;color:var(--mu);margin-top:2px}
+.sum-bar{background:var(--pl);border:1px solid var(--pr);border-radius:var(--rd);padding:14px 18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-top:4px}
+.sum-label{font-size:12px;color:var(--mu)}
+.sum-val{font-size:22px;font-weight:700;color:var(--pr)}
+.sum-val.editable{cursor:pointer;border-bottom:2px dashed transparent;padding:2px 4px;border-radius:4px;transition:.15s}
+.sum-val.editable:hover{background:rgba(79,99,255,.08);border-bottom-color:var(--pr)}
+.sum-edit-wrap{display:inline-flex;align-items:center;gap:6px}
+.sum-edit-input{font-size:22px;font-weight:700;color:var(--pr);background:#fff;border:1.5px solid var(--pr);border-radius:6px;padding:2px 8px;width:130px;text-align:right;outline:none}
+[data-theme=dark] .sum-edit-input{background:var(--sf2)}
+.sum-detail{font-size:11px;color:var(--mu);margin-top:2px}
+.btn-recalc{display:inline-flex;align-items:center;gap:4px;background:transparent;border:1px solid var(--bd);color:var(--mu);font-size:11px;font-weight:500;padding:4px 8px;border-radius:6px;cursor:pointer;transition:.15s;margin-left:8px;vertical-align:middle}
+.btn-recalc:hover{background:var(--pl);border-color:var(--pr);color:var(--pr)}
+.sum-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.sum-row{display:flex;align-items:center}
+.detail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.dc{background:var(--sf2);border-radius:var(--rs);padding:10px 12px}
+.dc .dl{font-size:11px;color:var(--mu);margin-bottom:3px}
+.dc .dv{font-size:13px;font-weight:600}
+.bar-chart{display:flex;align-items:flex-end;gap:4px;height:130px;padding:0 4px;margin-top:8px}
+.bar-col{display:flex;flex-direction:column;align-items:center;flex:1;justify-content:flex-end}
+.bar-vlabel{font-size:9px;color:var(--tx);font-weight:600;margin-bottom:2px;white-space:nowrap}
+.bar-inner{width:100%;background:var(--pr);border-radius:4px 4px 0 0;min-height:2px}
+.bar-mlabel{font-size:9px;color:var(--mu);margin-top:3px}
+/* ─── LOGIN ─── */
+.auth-wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:1000;padding:20px;padding-top:max(20px,env(safe-area-inset-top))}
+.auth-card{background:var(--sf);border:1px solid var(--bd);border-radius:18px;padding:32px 28px;width:100%;max-width:380px;box-shadow:0 10px 40px rgba(0,0,0,.15)}
+.auth-logo{text-align:center;margin-bottom:8px}
+.auth-logo .logo-text{font-size:32px}
+.auth-sub{text-align:center;color:var(--mu);font-size:12px;margin-bottom:22px}
+.auth-tab{display:flex;gap:4px;background:var(--sf2);padding:4px;border-radius:10px;margin-bottom:18px}
+.auth-tab button{flex:1;padding:8px;border-radius:8px;font-size:13px;font-weight:600;color:var(--mu);background:transparent}
+.auth-tab button.active{background:var(--pr);color:#fff}
+.auth-field{margin-bottom:12px}
+.auth-field label{display:block;font-size:11px;color:var(--mu);margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.auth-field input{width:100%;padding:10px 12px;background:var(--sf2);border:1px solid var(--bd);border-radius:8px;color:var(--tx);font-size:14px}
+.auth-field input:focus{outline:none;border-color:var(--pr);background:var(--sf)}
+.auth-btn{width:100%;padding:12px;background:var(--pr);color:#fff;border-radius:10px;font-size:14px;font-weight:600;margin-top:6px}
+.auth-btn:disabled{opacity:.6;cursor:not-allowed}
+.auth-msg{font-size:12px;text-align:center;margin-top:10px;padding:8px;border-radius:6px;min-height:18px}
+.auth-msg.err{background:var(--dl);color:var(--dg)}
+.auth-msg.ok{background:var(--okl);color:var(--ok)}
+.auth-link{display:block;text-align:center;color:var(--pr);font-size:12px;margin-top:14px;cursor:pointer;text-decoration:underline}
+/* ─── SYNC INDICATOR ─── */
+.sync-dot{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--mu);padding:4px 8px;border-radius:6px;background:var(--sf2);margin-right:6px}
+.sync-dot::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--mu)}
+.sync-dot.ok::before{background:var(--ok);box-shadow:0 0 4px var(--ok)}
+.sync-dot.busy::before{background:var(--wn);animation:pulse 1s infinite}
+.sync-dot.err::before{background:var(--dg)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.user-email{font-size:11px;color:var(--mu);margin-right:8px}
+.mini-list{display:flex;flex-direction:column;gap:6px}
+.mini-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--bd);border-radius:var(--rs);background:var(--sf2)}
+.filter-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.dpanel-row{display:flex;justify-content:space-between;padding:7px 10px;background:var(--sf2);border-radius:8px;font-size:12px;margin-bottom:4px}
+.notice{padding:10px 13px;border-radius:var(--rs);background:var(--wl);border:1px solid var(--wn);color:var(--wn);font-weight:600;font-size:12px;margin-bottom:12px}
+.sect-label{font-size:11px;font-weight:600;color:var(--mu);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;margin-top:10px}
+.tariff-table{width:100%;border-collapse:collapse;font-size:12px}
+.tariff-table th{background:var(--sf2);padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;border:1px solid var(--bd)}
+.tariff-table td{padding:5px 6px;text-align:center;border:1px solid var(--bd)}
+.tariff-table td:first-child{font-weight:600;background:var(--sf2);text-align:left;padding-left:8px}
+.tariff-table input{width:72px;padding:4px 6px;border:1px solid var(--bd);background:var(--sf);border-radius:6px;text-align:center;font-size:12px}
+.tariff-table input:focus{outline:none;border-color:var(--pr)}
+.deg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.deg-item label{display:block;font-size:11px;font-weight:600;color:var(--mu);text-transform:uppercase;margin-bottom:4px}
+.deg-item input{width:100%;padding:8px;border:1px solid var(--bd);background:var(--sf2);border-radius:8px;text-align:center;font-size:13px;font-weight:700}
+.coeff-wrap{display:flex;align-items:center;gap:14px;margin-top:6px}
+.coeff-wrap input[type=range]{flex:1;accent-color:var(--pr)}
+.coeff-val{min-width:48px;text-align:center;font-size:16px;font-weight:700;color:var(--pr)}
+.type-sw{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.type-btn{padding:10px;border-radius:var(--rs);font-weight:600;font-size:13px;border:1px solid var(--bd);background:var(--sf2);color:var(--mu);cursor:pointer}
+.type-btn.active{background:var(--pr);color:#fff;border-color:transparent}
+#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 22px;border-radius:10px;font-size:13px;font-weight:600;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+@media(max-width:600px){.kpi-grid,.detail-grid{grid-template-columns:1fr 1fr}.filter-row,.fg{grid-template-columns:1fr}.fg.c3{grid-template-columns:1fr 1fr}.panel-item{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- ════════ SCHERMATA LOGIN ════════ -->
+<div class="auth-wrap" id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="logo-text"><span class="lt-b">PDR</span><span class="lt-l">Tech</span></div>
+    </div>
+    <div class="auth-sub">PDR Studio Pro · Accedi al tuo gestionale</div>
+    <div class="auth-tab">
+      <button class="active" id="tab-login">Accedi</button>
+      <button id="tab-signup">Registrati</button>
+    </div>
+    <div id="auth-forgot-msg" class="auth-msg" style="display:none"></div>
+    <div class="auth-field"><label>Email</label><input type="email" id="auth-email" autocomplete="email"></div>
+    <div class="auth-field" id="auth-pwd-field"><label>Password</label><input type="password" id="auth-pwd" autocomplete="current-password"></div>
+    <button class="auth-btn" id="auth-submit">Accedi</button>
+    <div class="auth-msg" id="auth-msg"></div>
+    <a class="auth-link" id="auth-forgot">Password dimenticata?</a>
+  </div>
+</div>
+
+<div class="app hidden" id="app-main">
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo-text"><span class="lt-b">PDR</span><span class="lt-l">Tech</span></div>
+      <div class="brand-text"><h1>PDR Studio Pro</h1><p id="brand-sub">Preventivi · Veicoli · Dashboard</p></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;justify-content:flex-end">
+      <span class="sync-dot" id="sync-dot" title="Stato sincronizzazione">sync</span>
+      <span class="user-email" id="user-email"></span>
+      <button class="icon-btn" id="theme-btn" title="Cambia tema">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+      <button class="icon-btn" id="logout-btn" title="Esci">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
+  </header>
+  <div class="content">
+    <section id="v-prev" class="view active">
+      <div class="card">
+        <div class="card-title" id="ttl-newquote">Nuovo preventivo</div>
+        <div class="card-sub" id="ttl-lookupsub">Inserisci targa e/o VIN per cercare o creare una pratica.</div>
+        <div class="fg">
+          <div class="field" id="fld-lp"><label id="lbl-lplate">Targa</label><input id="inp-lp" maxlength="10"><div class="err" id="err-lp">Formato non valido.</div></div>
+          <div class="field" id="fld-lv"><label id="lbl-lvin">VIN / Telaio</label><input id="inp-lv" maxlength="17"><div class="err" id="err-lv">17 caratteri alfanumerici.</div></div>
+        </div>
+        <div class="btn-row"><button class="btn primary" id="btn-lookup">Continua →</button></div>
+      </div>
+      <div id="pform-wrap" class="hidden">
+        <div id="edit-notice" class="notice hidden">⚠ Veicolo già presente — stai modificando la pratica esistente.</div>
+        <div class="card">
+          <div class="card-title" id="ttl-qtype">Tipo preventivo</div>
+          <div class="mode-sw">
+            <button class="mode-btn active" id="mode-assic">Assicurativo</button>
+            <button class="mode-btn" id="mode-forfait">Forfait</button>
+          </div>
+          <div class="card-title" id="ttl-pdata">Dati pratica</div>
+          <div class="fg">
+            <div class="field" id="fld-qdate"><label id="lbl-qdate">Data preventivo *</label><input type="date" id="inp-date"><div class="err">Campo obbligatorio.</div></div>
+            <div class="field"><label id="lbl-rdate">Data riparazione (opzionale)</label><input type="date" id="inp-rdate"></div>
+            <div class="field sp2"><label id="lbl-pcamp">Ciclo Lavorativo</label><select id="inp-pcamp"></select></div>
+          </div>
+          <div class="fg">
+            <div class="field sw-wrap" id="fld-cust"><label id="lbl-cust">Cliente / Azienda</label><input id="inp-cust" autocomplete="off"><div id="sug-cust" class="sw-box hidden"></div><div class="err">Campo obbligatorio.</div></div>
+            <div class="field sw-wrap" id="fld-ins"><label id="lbl-ins">Assicurazione</label><input id="inp-ins" autocomplete="off"><div id="sug-ins" class="sw-box hidden"></div></div>
+            <div class="field sw-wrap" id="fld-brand"><label id="lbl-brand">Marca</label><input id="inp-brand" autocomplete="off"><div id="sug-brand" class="sw-box hidden"></div><div class="err">Marca non valida.</div></div>
+            <div class="field sw-wrap" id="fld-model"><label id="lbl-model">Modello</label><input id="inp-model" autocomplete="off"><div id="sug-model" class="sw-box hidden"></div><div class="err">Modello non valido.</div></div>
+            <div class="field" id="fld-plate"><label id="lbl-plate">Targa</label><input id="inp-plate"><div class="err">Targa non valida o duplicata.</div></div>
+            <div class="field" id="fld-vin"><label id="lbl-vin">VIN / Telaio</label><input id="inp-vin" maxlength="17"><div class="err">VIN non valido o duplicato.</div></div>
+            <div class="field sw-wrap"><label id="lbl-color">Colore</label><input id="inp-color" autocomplete="off"><div id="sug-color" class="sw-box hidden"></div></div>
+            <div class="field sp2"><label id="lbl-notes">Note</label><textarea id="inp-notes"></textarea></div>
+          </div>
+          <div id="deg-block">
+            <div class="sect-label" id="ttl-deg">Smontaggio</div>
+            <p class="card-sub" id="sub-deg">Categoria veicolo. Prezzo fisso, NON moltiplicato.</p>
+            <div id="deg-btns" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px"></div>
+          </div>
+        </div>
+        <div id="assic-block" class="card">
+          <div class="card-title" id="ttl-panels">Pannelli — bolli e lavorazione</div>
+          <div class="card-sub" id="sub-panels">Pannelli preimpostati su DSP. Modifica solo se serve DAP, CP o ALU.</div>
+          <div id="panel-list"></div>
+          <div class="sum-bar">
+            <div>
+              <div class="sum-label" id="lbl-total">Totale preventivo (IVA esclusa)</div>
+              <div class="sum-row"><div class="sum-val editable" id="quote-total" title="Clicca per forzare manualmente il prezzo">€ 0,00</div><button class="btn-recalc hidden" id="btn-recalc" title="Torna al prezzo calcolato">↺ Ricalcola</button></div>
+              <div class="sum-detail" id="sum-detail">0 bolli</div>
+            </div>
+            <div class="btn-row" style="margin:0">
+              <button class="btn primary" id="btn-save">Salva pratica</button>
+              <button class="btn" id="btn-pdf">Scarica PDF</button>
+              <button class="btn danger" id="btn-reset">Reset</button>
+            </div>
+          </div>
+        </div>
+        <div id="forfait-block" class="hidden card">
+          <div class="card-title" id="ttl-forfait">Forfait</div>
+          <div class="fg">
+            <div class="field" id="fld-famount"><label id="lbl-famount">Importo totale (€)</label><input id="inp-famount" type="number" min="0" step="0.01"><div class="err">Importo obbligatorio.</div></div>
+            <div class="field"><label id="lbl-fref">Riferimento</label><input id="inp-fref"></div>
+          </div>
+          <div class="sum-bar">
+            <div><div class="sum-label" id="lbl-ftotal">Totale forfait</div><div class="sum-val" id="forfait-total">€ 0,00</div></div>
+            <div class="btn-row" style="margin:0">
+              <button class="btn primary" id="btn-save2">Salva pratica</button>
+              <button class="btn" id="btn-pdf2">Scarica PDF</button>
+              <button class="btn danger" id="btn-reset2">Reset</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section id="v-auto" class="view">
+      <div class="card">
+        <div class="card-title" id="ttl-vehicles">Archivio veicoli</div>
+        <div class="filter-row">
+          <div class="field"><label id="lbl-fsearch">Cerca</label><input id="fil-q"></div>
+          <div class="field"><label id="lbl-ftype">Tipo</label><select id="fil-type"><option value="">—</option><option value="assicurativo" id="fopt-assic">Assicurativo</option><option value="forfait" id="fopt-forfait">Forfait</option></select></div>
+          <div class="field"><label id="lbl-frep">Riparazione</label><select id="fil-rep"><option value="">—</option><option value="Creata" id="fopt-created">Creata</option><option value="Riparata" id="fopt-repaired">Riparata</option></select></div>
+          <div class="field"><label id="lbl-fbill">Pagamento</label><select id="fil-bill"><option value="">—</option><option value="Non fatturata" id="fopt-bill0">Non fatt.</option><option value="Fatturata" id="fopt-bill1">Fatturata</option><option value="Saldata" id="fopt-bill2">Saldata</option></select></div>
+        </div>
+        <div class="tbl-wrap"><table><thead><tr><th id="th-client">Cliente</th><th id="th-vehicle">Veicolo</th><th id="th-plate">Targa</th><th id="th-type">Tipo</th><th id="th-rep">Rip.</th><th id="th-pay">Pag.</th><th id="th-total">Totale</th></tr></thead><tbody id="tbl-body"></tbody></table></div>
+      </div>
+      <div id="detail-box" class="card hidden"><div id="detail-content"></div></div>
+    </section>
+    <section id="v-dash" class="view">
+      <div class="card" style="padding:12px 16px">
+        <div class="mode-sw" style="margin-bottom:10px">
+          <button class="mode-btn active" id="dash-fiscal">Anno Fiscale</button>
+          <button class="mode-btn" id="dash-camp">Ciclo Lavorativo</button>
+        </div>
+        <div id="dash-camp-sel" class="hidden">
+          <div class="field"><label id="lbl-dashcamp">Ciclo selezionato</label><select id="sel-dashcamp"></select></div>
+        </div>
+        <div id="dash-fiscal-sel">
+          <div class="field"><label id="lbl-dashyr">Anno fiscale</label><select id="sel-dashyr"></select></div>
+        </div>
+      </div>
+      <div class="kpi-grid" id="kpi-grid"></div>
+      <div class="card"><div class="card-title" id="ttl-monthly">Fatturato mensile <span id="dash-yr" style="color:var(--mu);font-size:12px;font-weight:400"></span></div><div class="bar-chart" id="bar-chart"></div></div>
+      <div class="card"><div class="card-title" id="ttl-recent">Ultime pratiche</div><div class="mini-list" id="dash-recent"></div></div>
+    </section>
+    <section id="v-cli" class="view">
+      <div class="card">
+        <div class="card-title" id="ttl-addcli">Aggiungi cliente</div>
+        <div class="type-sw">
+          <button class="type-btn active" id="ctype-biz">Azienda</button>
+          <button class="type-btn" id="ctype-priv">Privato</button>
+        </div>
+        <div id="cli-priv-form" class="hidden">
+          <div class="fg">
+            <div class="field" id="fld-cfname"><label id="lbl-cfname">Nome *</label><input id="inp-cfname"><div class="err">Campo obbligatorio.</div></div>
+            <div class="field" id="fld-clname"><label id="lbl-clname">Cognome *</label><input id="inp-clname"><div class="err">Campo obbligatorio.</div></div>
+            <div class="field" id="fld-cphone"><label id="lbl-cphone">Telefono *</label><input id="inp-cphone" type="tel"><div class="err">Formato non valido.</div></div>
+            <div class="field"><label id="lbl-cemail">Email</label><input id="inp-cemail" type="email"></div>
+            <div class="field"><label id="lbl-caddr_p">Indirizzo</label><input id="inp-caddr_p"></div>
+            <div class="field"><label id="lbl-ccap_p">CAP</label><input id="inp-ccap_p"></div>
+            <div class="field"><label id="lbl-ccity">Città</label><input id="inp-ccity"></div>
+            <div class="field sp2"><label id="lbl-cnotes">Note</label><textarea id="inp-cnotes"></textarea></div>
+          </div>
+        </div>
+        <div id="cli-biz-form">
+          <div class="fg">
+            <div class="field" id="fld-cco"><label id="lbl-cco">Ragione sociale *</label><input id="inp-cco"><div class="err">Campo obbligatorio.</div></div>
+            <div class="field"><label id="lbl-ccontact">Referente</label><input id="inp-ccontact"></div>
+            <div class="field" id="fld-cphone2"><label id="lbl-cphone2">Telefono *</label><input id="inp-cphone2" type="tel"><div class="err">Formato non valido.</div></div>
+            <div class="field"><label id="lbl-cemail2">Email</label><input id="inp-cemail2" type="email"></div>
+            <div class="field"><label id="lbl-cvat">P.IVA / CF</label><input id="inp-cvat"></div>
+            <div class="field"><label id="lbl-caddr">Indirizzo</label><input id="inp-caddr"></div>
+            <div class="field"><label id="lbl-ccap2">CAP</label><input id="inp-ccap2"></div>
+            <div class="field"><label id="lbl-ccity2">Città</label><input id="inp-ccity2"></div>
+            <div class="field"><label id="lbl-ccountry2">Paese</label><input id="inp-ccountry2"></div>
+            <div class="field sp2"><label id="lbl-cnotes2">Note</label><textarea id="inp-cnotes2"></textarea></div>
+          </div>
+        </div>
+        <div class="btn-row"><button class="btn primary" id="btn-savecli">Salva cliente</button></div>
+      </div>
+      <div class="card"><div class="card-title" id="ttl-clientbook">Rubrica</div><div class="mini-list" id="cli-list"></div></div>
+    </section>
+    <section id="v-set" class="view">
+      <div class="card">
+        <div class="card-title" id="ttl-company">Dati aziendali</div>
+        <div class="fg">
+          <div class="field"><label id="lbl-scompany">Ragione sociale</label><input id="set-company"></div>
+          <div class="field"><label id="lbl-stech">Nome tecnico</label><input id="set-tech"></div>
+          <div class="field"><label>Email</label><input id="set-email"></div>
+          <div class="field"><label id="lbl-sphone">Telefono</label><input id="set-phone"></div>
+          <div class="field"><label id="lbl-svat">P.IVA</label><input id="set-vat"></div>
+          <div class="field"><label id="lbl-saddr">Indirizzo</label><input id="set-addr"></div>
+          <div class="field"><label id="lbl-scap">CAP</label><input id="set-cap"></div>
+          <div class="field"><label id="lbl-scity">Città</label><input id="set-city"></div>
+          <div class="field"><label id="lbl-scountry">Nazione</label><input id="set-country"></div>
+          <div class="field sp2"><label id="lbl-sfooter">Footer PDF</label><input id="set-footer"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" id="ttl-coeff">Coefficiente moltiplicatore</div>
+        <div class="card-sub" id="sub-coeff">Moltiplica il prezzo matrice. Lo smontaggio NON viene moltiplicato.</div>
+        <div class="coeff-wrap">
+          <span style="font-size:12px;color:var(--mu)">×0.25</span>
+          <input type="range" id="coeff-slider" min="0.25" max="2.50" step="0.05" value="1.00">
+          <span style="font-size:12px;color:var(--mu)">×2.50</span>
+          <div class="coeff-val" id="coeff-display">×1.00</div>
+        </div>
+        <div style="margin-top:8px;font-size:12px;color:var(--mu)">
+          <span id="lbl-scoeffdirect">Valore diretto:</span>
+          <input type="number" id="coeff-input" min="0.25" max="2.50" step="0.05" value="1.00" style="width:80px;padding:5px 8px;border:1px solid var(--bd);background:var(--sf2);border-radius:8px;text-align:center;margin-left:6px">
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" id="ttl-tariff">Tariffario matrice bolli</div>
+        <div class="card-sub" id="sub-tariff">DSP e DAP hanno lo stesso prezzo. ALU cofano anteriore usa "Con cofano ALU".</div>
+        <div style="overflow-x:auto"><table class="tariff-table"><thead><tr>
+          <th style="text-align:left" id="th-bollirange">Bolli</th>
+          <th id="th-sans">Senza cofano</th>
+          <th id="th-avec">Con cofano</th>
+          <th id="th-alu">Con cofano ALU</th>
+        </tr></thead><tbody id="tariff-body"></tbody></table></div>
+      </div>
+      <div class="card">
+        <div class="card-title" id="ttl-deg2">Smontaggio — tariffe categoria</div>
+        <div class="card-sub" id="sub-deg2">Prezzi fissi per categoria. NON moltiplicati per coefficiente.</div>
+        <div class="deg-grid">
+          <div class="deg-item"><label id="lbl-degA">Cat. A — utilitarie</label><input type="number" id="deg-A-set" min="0" step="1"></div>
+          <div class="deg-item"><label id="lbl-degB">Cat. B — berlina media</label><input type="number" id="deg-B-set" min="0" step="1"></div>
+          <div class="deg-item"><label id="lbl-degC">Cat. C — SUV / Monovolume</label><input type="number" id="deg-C-set" min="0" step="1"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" id="ttl-camp">Cicli Lavorativi annuali</div>
+        <div class="card-sub" id="sub-camp">Crea e gestisci i cicli di lavoro legati alle grandinate. Una pratica può appartenere ad un anno fiscale diverso dal ciclo lavorativo.</div>
+        <div id="camp-list" style="margin-bottom:10px"></div>
+        <div class="fg c3" style="margin-top:6px">
+          <div class="field"><label id="lbl-campname">Nome ciclo</label><input id="inp-campname" placeholder="es. Grandinata Estate 2026"></div>
+          <div class="field"><label id="lbl-campstart">Data inizio</label><input type="date" id="inp-campstart"></div>
+          <div class="field"><label id="lbl-campend">Data fine (opzionale)</label><input type="date" id="inp-campend"></div>
+        </div>
+        <div class="btn-row" style="margin-top:6px"><button class="btn primary sm" id="btn-addcamp">+ Aggiungi ciclo</button></div>
+      </div>
+      <div class="card">
+        <div class="card-title" id="ttl-prefs">Preferenze</div>
+        <div class="fg c3">
+          <div class="field"><label id="lbl-suilang">Lingua interfaccia</label>
+            <select id="set-uilang"><option value="IT">Italiano</option><option value="EN">English</option><option value="ES">Español</option><option value="FR">Français</option><option value="DE">Deutsch</option></select></div>
+          <div class="field"><label id="lbl-spdflang">Lingua preventivi</label>
+            <select id="set-pdflang"><option value="IT">Italiano</option><option value="EN">English</option><option value="ES">Español</option><option value="FR">Français</option><option value="DE">Deutsch</option></select></div>
+          <div class="field"><label id="lbl-stheme">Tema</label>
+            <select id="set-theme"><option value="light" id="opt-light">Chiaro</option><option value="dark" id="opt-dark">Scuro</option></select></div>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn primary" id="btn-saveset">Salva impostazioni</button>
+        <button class="btn danger sm" id="btn-clearall">Cancella tutto</button>
+      </div>
+    </section>
+  </div>
+  <nav class="bnav" id="bnav">
+    <button class="bnav-btn active" data-target="v-prev"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span id="nav-prev">Preventivo</span></button>
+    <button class="bnav-btn" data-target="v-auto"><svg viewBox="0 0 24 24"><path d="M19 17H5a2 2 0 0 1-2-2v-4l2.5-5h11L19 11v4a2 2 0 0 1-2 2z"/><circle cx="7.5" cy="17" r="2"/><circle cx="16.5" cy="17" r="2"/><path d="M5 11h14"/></svg><span id="nav-auto">Veicoli</span></button>
+    <button class="bnav-btn" data-target="v-dash"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span id="nav-dash">Dashboard</span></button>
+    <button class="bnav-btn" data-target="v-cli"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span id="nav-cli">Clienti</span></button>
+    <button class="bnav-btn" data-target="v-set"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span id="nav-set">Impostazioni</span></button>
+  </nav>
+</div>
+<div id="toast"></div>
+<script>
+/* ═══════════════ SUPABASE CONFIG ═══════════════ */
+const SUPABASE_URL='https://mtqsyftaaisyljfjujiv.supabase.co';
+const SUPABASE_KEY='sb_publishable_TLoZ-4grN2NCRPQp7dNQww_I4wONF5z';
+let supa=null, currentUser=null, syncMode='offline';
+try{supa=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);}catch(e){console.error('Supabase init failed:',e);}
+
+function setSyncStatus(mode,label){
+  syncMode=mode;
+  const d=document.getElementById('sync-dot');if(!d)return;
+  d.classList.remove('ok','busy','err');
+  if(mode==='ok')d.classList.add('ok');
+  else if(mode==='busy')d.classList.add('busy');
+  else if(mode==='err')d.classList.add('err');
+  d.textContent=label||mode;
+}
+
+/* ═══════════════ DATI STATICI ═══════════════ */
+const PANELS=['Cofano anteriore','Parafango ant. DX','Portiera ant. DX','Portiera post. DX','Parafango post. DX','Baule','Parafango post. SX','Portiera post. SX','Portiera ant. SX','Parafango ant. SX','Tetto','Montante DX','Montante SX'];
+const COFANO_ANT='Cofano anteriore';
+const DEFAULT_MATRIX=[['0–15',110,110,110],['16–25',260,260,260],['26–50',520,520,570],['51–75',670,750,800],['76–100',825,925,975],['101–125',970,1070,1120],['126–150',1110,1210,1260],['151–175',1275,1370,1420],['176–200',1440,1530,1580],['201–225',1590,1650,1700],['226–250',1740,1760,1810],['251–275',1820,1880,1930],['276–300',1900,2000,2050]];
+const MATRIX_MAX=[15,25,50,75,100,125,150,175,200,225,250,275,300];
+const DEFAULT_DEG={A:90,B:145,C:200};
+const COLORS=['Bianco','Nero','Grigio','Argento','Rosso','Blu','Verde','Beige','Marrone','Arancio','Giallo','Viola','Oro','Bronzo','Azzurro'];
+const INSURANCES=['Generali','Allianz','UnipolSai','Zurich','AXA','Reale Mutua','Cattolica','Genertel','Linear','Direct Line','Verti','ConTe.it','Quixa','Genialloyd','Vittoria Assicurazioni','ITAS','Groupama','HDI','Helvetia','Sara Assicurazioni','Tua Assicurazioni','Europ Assistance','Admiral','Prima.it','MAAF','MACIF','MAIF','GMF','Matmut','Crédit Agricole','Pacifica','BPCE','La Banque Postale','Aviva France','SwissLife','April','HUK-Coburg','DEVK','Ergo','LVM','VHV','R+V','AOK','Württembergische','Generali Deutschland','Mapfre','Mutua Madrileña','Línea Directa','Mutuactivos','Pelayo','Reale Seguros','Caser','Catalana Occidente','Santalucía','ASISA','Sanitas','Helvetia Seguros'];
+const VEHICLES={'Alfa Romeo':['147','156','159','166','Giulia','Giulietta','MiTo','Stelvio','Tonale'],'Audi':['A1','A3','A4','A5','A6','A7','A8','Q2','Q3','Q5','Q7','Q8','TT','RS3','RS4','RS5','RS6','e-tron'],'BMW':['Serie 1','Serie 2','Serie 3','Serie 4','Serie 5','Serie 7','X1','X2','X3','X4','X5','X6','X7','iX','i4','M3','M4','M5','Z4'],'Citroen':['C1','C3','C3 Aircross','C4','C5 Aircross','Berlingo'],'Dacia':['Duster','Jogger','Logan','Sandero','Spring'],'Ferrari':['296 GTB','488','812','F8','Portofino','Roma','SF90','Purosangue'],'Fiat':['500','500e','500L','500X','Doblo','Ducato','Panda','Punto','Tipo'],'Ford':['Fiesta','Focus','Galaxy','Kuga','Mondeo','Mustang','Puma','Ranger','Transit'],'Honda':['Civic','CR-V','HR-V','Jazz'],'Hyundai':['i10','i20','i30','Kona','Santa Fe','Tucson','Ioniq 5','Ioniq 6'],'Jaguar':['E-Pace','F-Pace','F-Type','I-Pace','XE','XF'],'Jeep':['Avenger','Cherokee','Compass','Grand Cherokee','Renegade','Wrangler'],'Kia':['Ceed','EV6','Niro','Picanto','Sorento','Sportage','XCeed'],'Land Rover':['Defender','Discovery','Range Rover','Range Rover Evoque','Range Rover Sport'],'Maserati':['Ghibli','GranTurismo','Levante','MC20','Quattroporte'],'Mazda':['2','3','6','CX-3','CX-30','CX-5','CX-60','MX-5'],'Mercedes-Benz':['A 180','A 200','B 180','C 200','C 220','CLA','CLS','E 200','E 220','G 63 AMG','GLA','GLB','GLC','GLE','GLS','SL','Sprinter','EQA','EQC','EQS'],'Mini':['Cooper','Countryman','Clubman','3 porte','5 porte'],'Nissan':['Ariya','Juke','Leaf','Micra','Qashqai','X-Trail'],'Opel':['Astra','Corsa','Grandland','Insignia','Mokka'],'Peugeot':['208','2008','308','3008','408','508','5008'],'Porsche':['718 Boxster','718 Cayman','911','Cayenne','Macan','Panamera','Taycan'],'Renault':['Captur','Clio','Kadjar','Megane','Scenic','Zoe','Austral'],'Seat':['Arona','Ateca','Ibiza','Leon','Tarraco'],'Skoda':['Enyaq','Fabia','Kamiq','Karoq','Kodiaq','Octavia','Superb'],'Suzuki':['Ignis','Jimny','S-Cross','Swift','Vitara'],'Tesla':['Model 3','Model S','Model X','Model Y','Cybertruck'],'Toyota':['Aygo','C-HR','Corolla','Hilux','Land Cruiser','Prius','RAV4','Yaris','bZ4X'],'Volkswagen':['Golf','ID.3','ID.4','ID.5','ID.7','Passat','Polo','T-Cross','T-Roc','Tiguan','Touareg','Transporter'],'Volvo':['C40','S60','S90','V60','V90','XC40','XC60','XC90']};
+
+/* ═══════════════ I18N ═══════════════ */
+const DICT={
+IT:{navPrev:'Preventivo',navAuto:'Veicoli',navDash:'Dashboard',navCli:'Clienti',navSet:'Impostazioni',brandSub:'Preventivi · Veicoli · Dashboard',newQuote:'Nuovo preventivo',lookupSub:'Inserisci targa e/o VIN per cercare o creare una pratica.',lplate:'Targa',lvin:'VIN / Telaio',qtype:'Tipo preventivo',mAssic:'Assicurativo',mForfait:'Forfait',pdata:'Dati pratica',qdate:'Data preventivo *',rdate:'Data riparazione (opzionale)',pcamp:'Ciclo Lavorativo',cust:'Cliente / Azienda',brand:'Marca',model:'Modello',color:'Colore',notes:'Note',plate:'Targa',vin:'VIN / Telaio',insurance:'Assicurazione',degTitle:'Smontaggio',degSub:'Categoria veicolo. Prezzo fisso, NON moltiplicato.',degNone:'Nessuno',degA:'Cat. A — Utilitarie',degB:'Cat. B — Berlina media',degC:'Cat. C — SUV / Monovolume',panelsTitle:'Pannelli — bolli e lavorazione',panelsSub:'Pannelli preimpostati su DSP. Modifica solo se serve DAP, CP o ALU.',totalLbl:'Totale preventivo (IVA esclusa)',save:'Salva pratica',pdfBtn:'Scarica PDF',resetBtn:'Reset',forfaitTitle:'Forfait',famount:'Importo totale (€)',fref:'Riferimento',ftotal:'Totale forfait',vehicles:'Archivio veicoli',search:'Cerca',ftype:'Tipo',frep:'Riparazione',fbill:'Pagamento',thCli:'Cliente',thVeh:'Veicolo',thPlate:'Targa',thType:'Tipo',thRep:'Rip.',thPay:'Pag.',thTot:'Totale',assicTag:'Assicurativo',forfaitTag:'Forfait',created:'Creata',repaired:'Riparata',billNone:'Non fatt.',billInv:'Fatturata',billPaid:'Saldata',notAvail:'—',monthly:'Fatturato mensile',recent:'Ultime pratiche',kTotal:'Pratiche totali',kCashed:'Incassato',kPending:'In attesa',kRep:'Riparate',kSeason:'Totale stagione',kToRepair:'Auto preventivate da riparare',kToBill:'Auto riparate da fatturare',kBilled:'Auto riparate da incassare',kPaid:'Auto riparate e incassate',dashFiscal:'Anno Fiscale',dashCamp:'Ciclo Lavorativo',dashYr:'Anno fiscale',dashCampSel:'Ciclo selezionato',addCli:'Aggiungi cliente',priv:'Privato',biz:'Azienda',cfname:'Nome *',clname:'Cognome *',cphone:'Telefono *',cemail:'Email',ccap:'CAP',ccity:'Città',cnotes:'Note',cco:'Ragione sociale *',ccontact:'Referente',cphone2:'Telefono *',cemail2:'Email',cvat:'P.IVA / CF',caddr:'Indirizzo',ccap2:'CAP',ccity2:'Città',ccountry2:'Paese',cnotes2:'Note',saveCli:'Salva cliente',clientbook:'Rubrica',noCli:'Nessun cliente.',companyData:'Dati aziendali',scompany:'Ragione sociale',stech:'Nome tecnico',sphone:'Telefono',svat:'P.IVA',saddr:'Indirizzo',scity:'Città',scountry:'Nazione',sfooter:'Footer PDF',coeffTitle:'Coefficiente moltiplicatore',coeffSub:'Moltiplica il prezzo matrice. Lo smontaggio NON viene moltiplicato.',coeffDirect:'Valore diretto:',tariffTitle:'Tariffario matrice bolli',tariffSub:'DSP e DAP stesso prezzo. ALU cofano ant. usa colonna ALU.',bolliRange:'Bolli',sans:'Senza cofano',avec:'Con cofano',aluCol:'Con cofano ALU',deg2:'Smontaggio — tariffe',deg2sub:'Prezzi fissi. NON moltiplicati.',degASet:'Cat. A — utilitarie',degBSet:'Cat. B — berlina media',degCSet:'Cat. C — SUV / Monovolume',campTitle:'Cicli Lavorativi annuali',campSub:'Crea e gestisci i cicli di lavoro legati alle grandinate.',campName:'Nome ciclo',campStart:'Data inizio',campEnd:'Data fine (opzionale)',campAdd:'+ Aggiungi ciclo',prefs:'Preferenze',uilang:'Lingua interfaccia',pdflang:'Lingua preventivi',theme:'Tema',themeLight:'Chiaro',themeDark:'Scuro',saveSet:'Salva impostazioni',clearAll:'Cancella tutto',repStatus:'Stato riparazione',billStatus:'Stato pagamento',panelDetail:'Pannelli',editP:'Modifica',delP:'Elimina',dlPdf:'Scarica PDF',confirmDelP:'Eliminare questa pratica?',confirmDelC:'Eliminare questo cliente?',confirmClear:'Eliminare tutti i dati?',editNotice:'⚠ Veicolo già presente — stai modificando la pratica esistente.',savedOk:'Pratica salvata!',cliSaved:'Cliente salvato!',setsSaved:'Impostazioni salvate!',dataCleared:'Dati eliminati.',errReq:'Campo obbligatorio.',errPlate:'Formato targa non valido.',errVin:'VIN: 17 caratteri alfanumerici.',errPlateDup:'Targa non valida o già presente.',errVinDup:'VIN non valido o già presente.',errPhone:'Formato telefono non valido.',noPlateVin:'Inserisci targa o VIN.',noPractices:'Nessuna pratica trovata.',colSans:'Senza cofano',colAvec:'Con cofano',colAlu:'Con cofano ALU',use:'Usa',months:['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'],pdfTitle:'Preventivo',pdfClient:'Cliente',pdfVeh:'Veicolo',pdfType:'Tipo',pdfAssic:'Assicurativo',pdfForfait:'Forfait',pdfDate:'Data',pdfPanel:'Pannello',pdfBolli:'Bolli',pdfBolliWord:'bolli',pdfWork:'Lavorazione',pdfAmt:'Importo',pdfTotal:'Totale (IVA esclusa)',pdfNotes:'Note',pdfSign:'Firma e timbro cliente',pdfInsurance:'Assicurazione',pdfNone:'Nessun pannello con danni.',pdfNoNotes:'Nessuna nota.',dismantling:'Smontaggio'},
+EN:{navPrev:'Quote',navAuto:'Vehicles',navDash:'Dashboard',navCli:'Clients',navSet:'Settings',brandSub:'Quotes · Vehicles · Dashboard',newQuote:'New quote',lookupSub:'Enter plate and/or VIN to find or create a case.',lplate:'Plate',lvin:'VIN / Chassis',qtype:'Quote type',mAssic:'Insurance',mForfait:'Fixed price',pdata:'Case data',qdate:'Quote date *',rdate:'Repair date (optional)',cust:'Client / Company',brand:'Brand',model:'Model',color:'Color',notes:'Notes',plate:'Plate',vin:'VIN',insurance:'Insurance',degTitle:'Removal',degSub:'Vehicle category. Fixed price, NOT multiplied.',degNone:'None',degA:'Cat. A — Small cars',degB:'Cat. B — Mid-size',degC:'Cat. C — SUV / Minivan',panelsTitle:'Panels — dents and repair',panelsSub:'Panels preset to DSP. Change only if DAP, CP or ALU applies.',totalLbl:'Total quote (excl. VAT)',save:'Save case',pdfBtn:'Download PDF',resetBtn:'Reset',forfaitTitle:'Fixed price',famount:'Total amount (€)',fref:'Reference',ftotal:'Fixed price total',vehicles:'Vehicle archive',search:'Search',ftype:'Type',frep:'Repair',fbill:'Payment',thCli:'Client',thVeh:'Vehicle',thPlate:'Plate',thType:'Type',thRep:'Rep.',thPay:'Pay.',thTot:'Total',assicTag:'Insurance',forfaitTag:'Fixed',created:'Created',repaired:'Repaired',billNone:'Not inv.',billInv:'Invoiced',billPaid:'Paid',notAvail:'—',monthly:'Monthly revenue',recent:'Recent cases',kTotal:'Total cases',kCashed:'Collected',kPending:'Pending',kRep:'Repaired',addCli:'Add client',priv:'Private',biz:'Company',cfname:'First name *',clname:'Last name *',cphone:'Phone *',cemail:'Email',ccity:'City',cnotes:'Notes',cco:'Company name *',ccontact:'Contact',cphone2:'Phone *',cemail2:'Email',cvat:'VAT / Tax ID',caddr:'Address',ccity2:'City',ccountry2:'Country',cnotes2:'Notes',saveCli:'Save client',clientbook:'Address book',noCli:'No clients.',companyData:'Company data',scompany:'Company name',stech:'Technician',sphone:'Phone',svat:'VAT',saddr:'Address',scity:'City',scountry:'Country',sfooter:'PDF footer',coeffTitle:'Multiplier coefficient',coeffSub:'Multiplies the matrix price. Removal NOT multiplied.',coeffDirect:'Direct value:',tariffTitle:'Dent matrix price list',tariffSub:'DSP and DAP same price. ALU front hood uses ALU column.',bolliRange:'Dents',sans:'Without hood',avec:'With hood',aluCol:'With hood ALU',deg2:'Removal — rates',deg2sub:'Fixed prices. NOT multiplied.',degASet:'Cat. A — small cars',degBSet:'Cat. B — mid-size',degCSet:'Cat. C — SUV / Minivan',prefs:'Preferences',uilang:'Interface language',pdflang:'Quote language',theme:'Theme',themeLight:'Light',themeDark:'Dark',saveSet:'Save settings',clearAll:'Clear all',repStatus:'Repair status',billStatus:'Payment status',panelDetail:'Panels',editP:'Edit',delP:'Delete',dlPdf:'Download PDF',confirmDelP:'Delete this case?',confirmDelC:'Delete this client?',confirmClear:'Delete all data?',editNotice:'⚠ Vehicle found — editing existing case.',savedOk:'Case saved!',cliSaved:'Client saved!',setsSaved:'Settings saved!',dataCleared:'Data cleared.',errReq:'Required field.',errPlate:'Invalid plate format.',errVin:'VIN: 17 alphanumeric characters.',errPlateDup:'Invalid or duplicate plate.',errVinDup:'Invalid or duplicate VIN.',errPhone:'Invalid phone.',noPlateVin:'Enter plate or VIN.',noPractices:'No cases found.',colSans:'Without hood',colAvec:'With hood',colAlu:'With hood ALU',use:'Use',months:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],pdfTitle:'Quote',pdfClient:'Client',pdfVeh:'Vehicle',pdfType:'Type',pdfAssic:'Insurance',pdfForfait:'Fixed price',pdfDate:'Date',pdfPanel:'Panel',pdfBolli:'Dents',pdfBolliWord:'dents',pdfWork:'Repair',pdfAmt:'Amount',pdfTotal:'Total (excl. VAT)',pdfNotes:'Notes',pdfSign:'Customer signature & stamp',pdfInsurance:'Insurance',pdfNone:'No damaged panels.',pdfNoNotes:'No notes.',dismantling:'Removal'},
+FR:{navPrev:'Devis',navAuto:'Véhicules',navDash:'Dashboard',navCli:'Clients',navSet:'Paramètres',brandSub:'Devis · Véhicules · Dashboard',newQuote:'Nouveau devis',lookupSub:'Entrez plaque et/ou VIN pour trouver ou créer un dossier.',lplate:'Plaque',lvin:'VIN / Châssis',qtype:'Type de devis',mAssic:'Assurance',mForfait:'Forfait',pdata:'Données dossier',qdate:'Date du devis *',rdate:'Date réparation (optionnel)',cust:'Client / Entreprise',brand:'Marque',model:'Modèle',color:'Couleur',notes:'Notes',plate:'Plaque',vin:'VIN',insurance:'Assurance',degTitle:'Dégarnissage',degSub:'Catégorie du véhicule. Prix fixe, NON multiplié.',degNone:'Aucun',degA:'Cat. A — Citadines',degB:'Cat. B — Berlines',degC:'Cat. C — SUV / Monospace',panelsTitle:'Panneaux — impacts et réparation',panelsSub:'Panneaux préréglés sur DSP. Modifier si DAP, CP ou ALU.',totalLbl:'Total devis (HT)',save:'Enregistrer',pdfBtn:'Télécharger PDF',resetBtn:'Réinitialiser',forfaitTitle:'Forfait',famount:'Montant total (€)',fref:'Référence',ftotal:'Total forfait',vehicles:'Archive véhicules',search:'Rechercher',ftype:'Type',frep:'Réparation',fbill:'Paiement',thCli:'Client',thVeh:'Véhicule',thPlate:'Plaque',thType:'Type',thRep:'Rép.',thPay:'Paiement',thTot:'Total',assicTag:'Assurance',forfaitTag:'Forfait',created:'Créé',repaired:'Réparé',billNone:'Non fact.',billInv:'Facturé',billPaid:'Réglé',notAvail:'—',monthly:"CA mensuel",recent:'Derniers dossiers',kTotal:'Dossiers totaux',kCashed:'Encaissé',kPending:'En attente',kRep:'Réparés',addCli:'Ajouter un client',priv:'Particulier',biz:'Entreprise',cfname:'Prénom *',clname:'Nom *',cphone:'Téléphone *',cemail:'Email',ccity:'Ville',cnotes:'Notes',cco:'Raison sociale *',ccontact:'Contact',cphone2:'Téléphone *',cemail2:'Email',cvat:'TVA / SIRET',caddr:'Adresse',ccity2:'Ville',ccountry2:'Pays',cnotes2:'Notes',saveCli:'Enregistrer le client',clientbook:'Répertoire',noCli:'Aucun client.',companyData:'Données société',scompany:'Raison sociale',stech:'Technicien',sphone:'Téléphone',svat:'TVA',saddr:'Adresse',scity:'Ville',scountry:'Pays',sfooter:'Pied de page PDF',coeffTitle:'Coefficient multiplicateur',coeffSub:'Multiplie le prix matrice. Dégarnissage NON multiplié.',coeffDirect:'Valeur directe :',tariffTitle:'Tarif matrice impacts',tariffSub:'DSP et DAP même prix. ALU capot avant = colonne ALU.',bolliRange:'Impacts',sans:'Sans capot',avec:'Avec capot',aluCol:'Avec capot ALU',deg2:'Dégarnissage — tarifs',deg2sub:'Prix fixes. NON multipliés.',degASet:'Cat. A — citadines',degBSet:'Cat. B — berline',degCSet:'Cat. C — SUV / Monospace',prefs:'Préférences',uilang:'Langue interface',pdflang:'Langue devis',theme:'Thème',themeLight:'Clair',themeDark:'Sombre',saveSet:'Enregistrer',clearAll:'Effacer tout',repStatus:'État réparation',billStatus:'État paiement',panelDetail:'Panneaux',editP:'Modifier',delP:'Supprimer',dlPdf:'Télécharger PDF',confirmDelP:'Supprimer ce dossier ?',confirmDelC:'Supprimer ce client ?',confirmClear:'Supprimer toutes les données ?',editNotice:'⚠ Véhicule trouvé — modification du dossier.',savedOk:'Dossier enregistré !',cliSaved:'Client enregistré !',setsSaved:'Paramètres enregistrés !',dataCleared:'Données effacées.',errReq:'Champ obligatoire.',errPlate:'Format plaque invalide.',errVin:'VIN : 17 caractères alphanumériques.',errPlateDup:'Plaque invalide ou déjà existante.',errVinDup:'VIN invalide ou déjà existant.',errPhone:'Téléphone invalide.',noPlateVin:'Entrez plaque ou VIN.',noPractices:'Aucun dossier.',colSans:'Sans capot',colAvec:'Avec capot',colAlu:'Avec capot ALU',use:'Utiliser',months:['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'],pdfTitle:'Devis',pdfClient:'Client',pdfVeh:'Véhicule',pdfType:'Type',pdfAssic:'Assurance',pdfForfait:'Forfait',pdfDate:'Date',pdfPanel:'Panneau',pdfBolli:'Impacts',pdfBolliWord:'impacts',pdfWork:'Traitement',pdfAmt:'Montant',pdfTotal:'Total (HT)',pdfNotes:'Notes',pdfSign:'Signature et cachet client',pdfInsurance:'Assurance',pdfNone:'Aucun dommage.',pdfNoNotes:'Aucune note.',dismantling:'Dégarnissage'},
+ES:{navPrev:'Presupuesto',navAuto:'Vehículos',navDash:'Dashboard',navCli:'Clientes',navSet:'Ajustes',brandSub:'Presupuestos · Vehículos · Dashboard',newQuote:'Nuevo presupuesto',lookupSub:'Introduce matrícula y/o VIN.',lplate:'Matrícula',lvin:'VIN / Bastidor',qtype:'Tipo',mAssic:'Seguro',mForfait:'Precio fijo',pdata:'Datos',qdate:'Fecha *',rdate:'Fecha reparación (opcional)',cust:'Cliente',brand:'Marca',model:'Modelo',color:'Color',notes:'Notas',plate:'Matrícula',vin:'VIN',insurance:'Seguro',degTitle:'Desmontaje',degSub:'Categoría. Precio fijo, NO multiplicado.',degNone:'Ninguno',degA:'Cat. A',degB:'Cat. B',degC:'Cat. C — SUV',panelsTitle:'Paneles',panelsSub:'Preconfigurados en DSP.',totalLbl:'Total (sin IVA)',save:'Guardar',pdfBtn:'Descargar PDF',resetBtn:'Resetear',forfaitTitle:'Precio fijo',famount:'Importe (€)',fref:'Referencia',ftotal:'Total',vehicles:'Vehículos',search:'Buscar',ftype:'Tipo',frep:'Reparación',fbill:'Pago',thCli:'Cliente',thVeh:'Vehículo',thPlate:'Matrícula',thType:'Tipo',thRep:'Rep.',thPay:'Pago',thTot:'Total',assicTag:'Seguro',forfaitTag:'Fijo',created:'Creado',repaired:'Reparado',billNone:'Sin fact.',billInv:'Facturado',billPaid:'Cobrado',notAvail:'—',monthly:'Facturación mensual',recent:'Últimos',kTotal:'Total',kCashed:'Cobrado',kPending:'Pendiente',kRep:'Reparados',addCli:'Añadir cliente',priv:'Particular',biz:'Empresa',cfname:'Nombre *',clname:'Apellido *',cphone:'Teléfono *',cemail:'Email',ccity:'Ciudad',cnotes:'Notas',cco:'Razón social *',ccontact:'Contacto',cphone2:'Teléfono *',cemail2:'Email',cvat:'CIF/NIF',caddr:'Dirección',ccity2:'Ciudad',ccountry2:'País',cnotes2:'Notas',saveCli:'Guardar',clientbook:'Agenda',noCli:'Sin clientes.',companyData:'Empresa',scompany:'Razón social',stech:'Técnico',sphone:'Teléfono',svat:'CIF',saddr:'Dirección',scity:'Ciudad',scountry:'País',sfooter:'Pie PDF',coeffTitle:'Coeficiente',coeffSub:'Multiplica el precio. Desmontaje NO multiplicado.',coeffDirect:'Valor:',tariffTitle:'Tarifa',tariffSub:'DSP y DAP mismo precio.',bolliRange:'Abolladuras',sans:'Sin capó',avec:'Con capó',aluCol:'Con capó ALU',deg2:'Desmontaje',deg2sub:'Precios fijos.',degASet:'Cat. A',degBSet:'Cat. B',degCSet:'Cat. C — SUV',prefs:'Preferencias',uilang:'Idioma interfaz',pdflang:'Idioma presupuestos',theme:'Tema',themeLight:'Claro',themeDark:'Oscuro',saveSet:'Guardar',clearAll:'Borrar todo',repStatus:'Estado reparación',billStatus:'Estado pago',panelDetail:'Paneles',editP:'Editar',delP:'Eliminar',dlPdf:'Descargar PDF',confirmDelP:'¿Eliminar?',confirmDelC:'¿Eliminar cliente?',confirmClear:'¿Eliminar todo?',editNotice:'⚠ Vehículo encontrado.',savedOk:'¡Guardado!',cliSaved:'¡Cliente guardado!',setsSaved:'¡Guardado!',dataCleared:'Eliminado.',errReq:'Obligatorio.',errPlate:'Formato inválido.',errVin:'VIN: 17 caracteres.',errPlateDup:'Duplicada.',errVinDup:'VIN duplicado.',errPhone:'Teléfono inválido.',noPlateVin:'Introduce matrícula o VIN.',noPractices:'Sin resultados.',colSans:'Sin capó',colAvec:'Con capó',colAlu:'Con capó ALU',use:'Usar',months:['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],pdfTitle:'Presupuesto',pdfClient:'Cliente',pdfVeh:'Vehículo',pdfType:'Tipo',pdfAssic:'Seguro',pdfForfait:'Precio fijo',pdfDate:'Fecha',pdfPanel:'Panel',pdfBolli:'Abolladuras',pdfBolliWord:'abolladuras',pdfWork:'Trabajo',pdfAmt:'Importe',pdfTotal:'Total (sin IVA)',pdfNotes:'Notas',pdfSign:'Firma y sello cliente',pdfInsurance:'Seguro',pdfNone:'Sin daños.',pdfNoNotes:'Sin notas.',dismantling:'Desmontaje'},
+DE:{navPrev:'Angebot',navAuto:'Fahrzeuge',navDash:'Dashboard',navCli:'Kunden',navSet:'Einstellungen',brandSub:'Angebote · Fahrzeuge · Dashboard',newQuote:'Neues Angebot',lookupSub:'Kennzeichen und/oder VIN eingeben.',lplate:'Kennzeichen',lvin:'VIN',qtype:'Angebotstyp',mAssic:'Versicherung',mForfait:'Pauschal',pdata:'Daten',qdate:'Datum *',rdate:'Reparaturdatum (optional)',cust:'Kunde',brand:'Marke',model:'Modell',color:'Farbe',notes:'Notizen',plate:'Kennzeichen',vin:'VIN',insurance:'Versicherung',degTitle:'Demontage',degSub:'Kategorie. Festpreis, NICHT multipliziert.',degNone:'Keine',degA:'Kat. A',degB:'Kat. B',degC:'Kat. C — SUV',panelsTitle:'Paneele',panelsSub:'Voreingestellt auf DSP.',totalLbl:'Gesamt (ohne MwSt.)',save:'Speichern',pdfBtn:'PDF herunterladen',resetBtn:'Zurücksetzen',forfaitTitle:'Pauschal',famount:'Betrag (€)',fref:'Referenz',ftotal:'Gesamt',vehicles:'Fahrzeuge',search:'Suche',ftype:'Typ',frep:'Reparatur',fbill:'Zahlung',thCli:'Kunde',thVeh:'Fahrzeug',thPlate:'Kennzeichen',thType:'Typ',thRep:'Rep.',thPay:'Zahlung',thTot:'Gesamt',assicTag:'Versicherung',forfaitTag:'Pauschal',created:'Erstellt',repaired:'Repariert',billNone:'Nicht fakt.',billInv:'Fakturiert',billPaid:'Bezahlt',notAvail:'—',monthly:'Monatlicher Umsatz',recent:'Letzte Vorgänge',kTotal:'Gesamt',kCashed:'Eingenommen',kPending:'Ausstehend',kRep:'Repariert',addCli:'Kunden hinzufügen',priv:'Privat',biz:'Unternehmen',cfname:'Vorname *',clname:'Nachname *',cphone:'Telefon *',cemail:'Email',ccity:'Stadt',cnotes:'Notizen',cco:'Firmenname *',ccontact:'Kontakt',cphone2:'Telefon *',cemail2:'Email',cvat:'USt-IdNr.',caddr:'Adresse',ccity2:'Stadt',ccountry2:'Land',cnotes2:'Notizen',saveCli:'Speichern',clientbook:'Adressbuch',noCli:'Keine Kunden.',companyData:'Firmendaten',scompany:'Firmenname',stech:'Techniker',sphone:'Telefon',svat:'USt-IdNr.',saddr:'Adresse',scity:'Stadt',scountry:'Land',sfooter:'PDF-Fußzeile',coeffTitle:'Koeffizient',coeffSub:'Multipliziert den Matrixpreis. Demontage NICHT multipliziert.',coeffDirect:'Direktwert:',tariffTitle:'Preisliste',tariffSub:'DSP und DAP gleicher Preis.',bolliRange:'Dellen',sans:'Ohne Motorhaube',avec:'Mit Motorhaube',aluCol:'Mit Motorhaube ALU',deg2:'Demontage',deg2sub:'Festpreise.',degASet:'Kat. A',degBSet:'Kat. B',degCSet:'Kat. C — SUV',prefs:'Einstellungen',uilang:'Sprache',pdflang:'Angebotssprache',theme:'Thema',themeLight:'Hell',themeDark:'Dunkel',saveSet:'Speichern',clearAll:'Alles löschen',repStatus:'Reparaturstatus',billStatus:'Zahlungsstatus',panelDetail:'Paneele',editP:'Bearbeiten',delP:'Löschen',dlPdf:'PDF herunterladen',confirmDelP:'Löschen?',confirmDelC:'Kunden löschen?',confirmClear:'Alle Daten löschen?',editNotice:'⚠ Fahrzeug gefunden.',savedOk:'Gespeichert!',cliSaved:'Kunde gespeichert!',setsSaved:'Gespeichert!',dataCleared:'Gelöscht.',errReq:'Pflichtfeld.',errPlate:'Ungültiges Kennzeichen.',errVin:'VIN: 17 Zeichen.',errPlateDup:'Kennzeichen ungültig.',errVinDup:'VIN ungültig.',errPhone:'Telefon ungültig.',noPlateVin:'Kennzeichen oder VIN eingeben.',noPractices:'Keine Vorgänge.',colSans:'Ohne Motorhaube',colAvec:'Mit Motorhaube',colAlu:'Mit Motorhaube ALU',use:'Verwenden',months:['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'],pdfTitle:'Angebot',pdfClient:'Kunde',pdfVeh:'Fahrzeug',pdfType:'Typ',pdfAssic:'Versicherung',pdfForfait:'Pauschal',pdfDate:'Datum',pdfPanel:'Paneel',pdfBolli:'Dellen',pdfBolliWord:'Dellen',pdfWork:'Bearbeitung',pdfAmt:'Betrag',pdfTotal:'Gesamt (ohne MwSt.)',pdfNotes:'Notizen',pdfSign:'Unterschrift und Stempel Kunde',pdfInsurance:'Versicherung',pdfNone:'Keine Schäden.',pdfNoNotes:'Keine Notizen.',dismantling:'Demontage'}
+};
+// V5: completion patches for non-IT dictionaries (CAP, season, campaign)
+['EN','FR','ES','DE'].forEach(L=>{
+  if(!DICT[L])return;
+  const ext={
+    EN:{ccap:'ZIP',ccap2:'ZIP',kSeason:'Season total',dashFiscal:'Fiscal Year',dashCamp:'Work Cycle',dashYr:'Fiscal year',dashCampSel:'Selected cycle',pcamp:'Work Cycle',campTitle:'Yearly Work Cycles',campSub:'Manage work cycles tied to hailstorms.',campName:'Cycle name',campStart:'Start date',campEnd:'End date (optional)',campAdd:'+ Add cycle',lblIns:'Insurance',kToRepair:'Quoted cars to repair',kToBill:'Repaired cars to invoice',kBilled:'Repaired cars to collect',kPaid:'Repaired & collected cars'},
+    FR:{ccap:'CP',ccap2:'CP',kSeason:'Total saison',dashFiscal:'Année fiscale',dashCamp:'Cycle de travail',dashYr:'Année fiscale',dashCampSel:'Cycle sélectionné',pcamp:'Cycle de travail',campTitle:'Cycles de travail annuels',campSub:'Gérez les cycles liés aux grêles.',campName:'Nom du cycle',campStart:'Date début',campEnd:'Date fin (optionnel)',campAdd:'+ Ajouter cycle',lblIns:'Assurance',kToRepair:'Voitures à réparer',kToBill:'Voitures réparées à facturer',kBilled:'Voitures réparées à encaisser',kPaid:'Voitures réparées et encaissées'},
+    ES:{ccap:'CP',ccap2:'CP',kSeason:'Total temporada',dashFiscal:'Año fiscal',dashCamp:'Ciclo de trabajo',dashYr:'Año fiscal',dashCampSel:'Ciclo seleccionado',pcamp:'Ciclo de trabajo',campTitle:'Ciclos de trabajo anuales',campSub:'Gestiona ciclos asociados a granizadas.',campName:'Nombre del ciclo',campStart:'Fecha inicio',campEnd:'Fecha fin (opcional)',campAdd:'+ Añadir ciclo',lblIns:'Seguro',kToRepair:'Coches presupuestados por reparar',kToBill:'Coches reparados por facturar',kBilled:'Coches reparados por cobrar',kPaid:'Coches reparados y cobrados'},
+    DE:{ccap:'PLZ',ccap2:'PLZ',kSeason:'Saison gesamt',dashFiscal:'Geschäftsjahr',dashCamp:'Arbeitszyklus',dashYr:'Geschäftsjahr',dashCampSel:'Ausgewählter Zyklus',pcamp:'Arbeitszyklus',campTitle:'Jährliche Arbeitszyklen',campSub:'Verwalte Zyklen für Hagelschäden.',campName:'Zyklusname',campStart:'Startdatum',campEnd:'Enddatum (optional)',campAdd:'+ Zyklus hinzufügen',lblIns:'Versicherung',kToRepair:'Angebotene Fahrzeuge zur Reparatur',kToBill:'Reparierte Fahrzeuge zur Fakturierung',kBilled:'Reparierte Fahrzeuge zum Einzug',kPaid:'Reparierte und bezahlte Fahrzeuge'}
+  };
+  Object.assign(DICT[L],ext[L]);
+});
+const _DICT_TERMINATOR=1;
+
+/* ═══════════════ STATO ═══════════════ */
+const SK={p:'pdrstudio_p',c:'pdrstudio_c',s:'pdrstudio_s',mx:'pdrstudio_mx',dg:'pdrstudio_dg',cm:'pdrstudio_cm',ins:'pdrstudio_ins'};
+let practices=[], clients=[], campaigns=[], customInsurances=[];
+let settings={company:'',tech:'',email:'',phone:'',vat:'',addr:'',cap:'',city:'',country:'',footer:'',uiLang:'IT',pdfLang:'IT',theme:'dark',coeff:1};
+let matrix=DEFAULT_MATRIX.map(r=>[...r]), deg={...DEFAULT_DEG};
+let PS={}, curMode='assicurativo', degCat='none', editId=null, activeId=null, cliType='azienda', dashView='fiscal', activeCampaignId=null, manualTotal=null;
+
+const uid=()=>crypto.randomUUID();
+const now=()=>new Date().toISOString();
+const today=()=>new Date().toISOString().slice(0,10);
+const money=v=>new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR'}).format(+v||0);
+const dateStr=d=>d?new Date(d).toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',year:'numeric'}):'-';
+const fmtDate=s=>{if(!s)return'-';if(/^\d{4}-\d{2}-\d{2}/.test(s)){const p=s.slice(0,10).split('-');return p[2]+'/'+p[1]+'/'+p[0];}return dateStr(s);};
+const norm=v=>(v||'').trim().toUpperCase().replace(/\s/g,'');
+const g=id=>document.getElementById(id);
+const gv=id=>(g(id)||{}).value||'';
+const T=k=>(DICT[settings.uiLang]||DICT.IT)[k]||k;
+function toast(msg){const t=g('toast');if(!t)return;t.textContent=msg;t.style.opacity='1';clearTimeout(t._to);t._to=setTimeout(()=>t.style.opacity='0',2400);}
+
+/* ═══════════════ STORAGE ═══════════════ */
+function load(){
+  try{practices=JSON.parse(localStorage.getItem(SK.p)||'[]');}catch(e){practices=[];}
+  try{clients=JSON.parse(localStorage.getItem(SK.c)||'[]');}catch(e){clients=[];}
+  try{campaigns=JSON.parse(localStorage.getItem(SK.cm)||'[]');}catch(e){campaigns=[];}
+  try{customInsurances=JSON.parse(localStorage.getItem(SK.ins)||'[]');}catch(e){customInsurances=[];}
+  try{const s=JSON.parse(localStorage.getItem(SK.s)||'{}');settings={...settings,...s};}catch(e){}
+  try{const mx=JSON.parse(localStorage.getItem(SK.mx)||'null');if(mx&&mx.length===DEFAULT_MATRIX.length)matrix=mx;}catch(e){}
+  try{const d=JSON.parse(localStorage.getItem(SK.dg)||'null');if(d)deg={...deg,...d};}catch(e){}
+}
+function save(){
+  localStorage.setItem(SK.p,JSON.stringify(practices));
+  localStorage.setItem(SK.c,JSON.stringify(clients));
+  localStorage.setItem(SK.cm,JSON.stringify(campaigns));
+  localStorage.setItem(SK.ins,JSON.stringify(customInsurances));
+  localStorage.setItem(SK.s,JSON.stringify(settings));
+  localStorage.setItem(SK.mx,JSON.stringify(matrix));
+  localStorage.setItem(SK.dg,JSON.stringify(deg));
+}
+
+/* ═══════════════ I18N APPLY ═══════════════ */
+function applyI18n(){
+  const t=DICT[settings.uiLang]||DICT.IT;
+  const s=(id,v)=>{const e=g(id);if(e&&v!==undefined)e.textContent=v;};
+  g('brand-sub').textContent=t.brandSub;
+  s('nav-prev',t.navPrev);s('nav-auto',t.navAuto);s('nav-dash',t.navDash);s('nav-cli',t.navCli);s('nav-set',t.navSet);
+  s('ttl-newquote',t.newQuote);s('ttl-lookupsub',t.lookupSub);s('lbl-lplate',t.lplate);s('lbl-lvin',t.lvin);
+  g('btn-lookup').textContent='Continua →';
+  s('ttl-qtype',t.qtype);
+  g('mode-assic').textContent=t.mAssic;g('mode-forfait').textContent=t.mForfait;
+  s('ttl-pdata',t.pdata);s('lbl-qdate',t.qdate);s('lbl-rdate',t.rdate);
+  s('lbl-cust',t.cust);s('lbl-brand',t.brand);s('lbl-model',t.model);s('lbl-color',t.color);s('lbl-notes',t.notes);
+  s('lbl-plate',t.plate);s('lbl-vin',t.vin);
+  s('ttl-deg',t.degTitle);s('sub-deg',t.degSub);
+  s('ttl-panels',t.panelsTitle);s('sub-panels',t.panelsSub);
+  s('lbl-total',t.totalLbl);
+  g('btn-save').textContent=t.save;g('btn-pdf').textContent=t.pdfBtn;g('btn-reset').textContent=t.resetBtn;
+  g('btn-save2').textContent=t.save;g('btn-pdf2').textContent=t.pdfBtn;g('btn-reset2').textContent=t.resetBtn;
+  s('ttl-forfait',t.forfaitTitle);s('lbl-famount',t.famount);s('lbl-fref',t.fref);s('lbl-ftotal',t.ftotal);
+  s('edit-notice',t.editNotice);
+  s('ttl-vehicles',t.vehicles);s('lbl-fsearch',t.search);s('lbl-ftype',t.ftype);s('lbl-frep',t.frep);s('lbl-fbill',t.fbill);
+  s('th-client',t.thCli);s('th-vehicle',t.thVeh);s('th-plate',t.thPlate);s('th-type',t.thType);s('th-rep',t.thRep);s('th-pay',t.thPay);s('th-total',t.thTot);
+  s('fopt-assic',t.assicTag);s('fopt-forfait',t.forfaitTag);s('fopt-created',t.created);s('fopt-repaired',t.repaired);
+  s('fopt-bill0',t.billNone);s('fopt-bill1',t.billInv);s('fopt-bill2',t.billPaid);
+  const mEl=g('ttl-monthly');if(mEl){const sp=mEl.querySelector('span');const tn=mEl.childNodes[0];if(tn&&tn.nodeType===3)tn.textContent=t.monthly+' ';else mEl.prepend(document.createTextNode(t.monthly+' '));if(sp)mEl.appendChild(sp);}
+  s('ttl-recent',t.recent);
+  s('ttl-addcli',t.addCli);g('ctype-priv').textContent=t.priv;g('ctype-biz').textContent=t.biz;
+  s('lbl-cfname',t.cfname);s('lbl-clname',t.clname);s('lbl-cphone',t.cphone);s('lbl-cemail',t.cemail);s('lbl-ccity',t.ccity);s('lbl-cnotes',t.cnotes);
+  s('lbl-cco',t.cco);s('lbl-ccontact',t.ccontact);s('lbl-cphone2',t.cphone2);s('lbl-cemail2',t.cemail2);s('lbl-cvat',t.cvat);s('lbl-caddr',t.caddr);s('lbl-ccity2',t.ccity2);s('lbl-ccountry2',t.ccountry2);s('lbl-cnotes2',t.cnotes2);
+  g('btn-savecli').textContent=t.saveCli;s('ttl-clientbook',t.clientbook);
+  s('ttl-company',t.companyData);s('lbl-scompany',t.scompany);s('lbl-stech',t.stech);s('lbl-sphone',t.sphone);s('lbl-svat',t.svat);s('lbl-saddr',t.saddr);s('lbl-scap',t.ccap||'CAP');s('lbl-scity',t.scity);s('lbl-scountry',t.scountry);s('lbl-sfooter',t.sfooter);
+  s('ttl-coeff',t.coeffTitle);s('sub-coeff',t.coeffSub);s('lbl-scoeffdirect',t.coeffDirect);
+  s('ttl-tariff',t.tariffTitle);s('sub-tariff',t.tariffSub);
+  s('th-bollirange',t.bolliRange);s('th-sans',t.sans);s('th-avec',t.avec);s('th-alu',t.aluCol);
+  s('ttl-deg2',t.deg2);s('sub-deg2',t.deg2sub);s('lbl-degA',t.degASet);s('lbl-degB',t.degBSet);s('lbl-degC',t.degCSet);
+  // V5: campagne
+  s('ttl-camp',t.campTitle||'Cicli Lavorativi annuali');
+  s('sub-camp',t.campSub||'Crea e gestisci i cicli di lavoro legati alle grandinate.');
+  s('lbl-campname',t.campName||'Nome ciclo');
+  s('lbl-campstart',t.campStart||'Data inizio');
+  s('lbl-campend',t.campEnd||'Data fine (opzionale)');
+  const btnAdd=g('btn-addcamp');if(btnAdd)btnAdd.textContent=t.campAdd||'+ Aggiungi ciclo';
+  s('lbl-pcamp',t.pcamp||'Ciclo Lavorativo');
+  s('lbl-ins',t.lblIns||t.insurance||'Assicurazione');
+  // V5: dashboard toggle
+  const dF=g('dash-fiscal');if(dF)dF.textContent=t.dashFiscal||'Anno Fiscale';
+  const dC=g('dash-camp');if(dC)dC.textContent=t.dashCamp||'Ciclo Lavorativo';
+  s('lbl-dashyr',t.dashYr||'Anno fiscale');
+  s('lbl-dashcamp',t.dashCampSel||'Ciclo selezionato');
+  // V5: CAP labels
+  s('lbl-ccap_p',t.ccap||'CAP');
+  s('lbl-ccap2',t.ccap2||'CAP');
+  s('ttl-prefs',t.prefs);s('lbl-suilang',t.uilang);s('lbl-spdflang',t.pdflang);s('lbl-stheme',t.theme);
+  s('opt-light',t.themeLight);s('opt-dark',t.themeDark);
+  g('btn-saveset').textContent=t.saveSet;g('btn-clearall').textContent=t.clearAll;
+  renderDegBtns();renderPanels();
+}
+
+/* ═══════════════ NAV ═══════════════ */
+function goTo(target){
+  document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.toggle('active',b.dataset.target===target));
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===target));
+  if(target==='v-dash')renderDash();
+  if(target==='v-auto')renderTable();
+  if(target==='v-cli'){setCliType('azienda');renderClients();}
+  if(target==='v-set')fillSettings();
+}
+g('bnav').addEventListener('click',e=>{const b=e.target.closest('.bnav-btn');if(b&&b.dataset.target)goTo(b.dataset.target);});
+
+/* ═══════════════ TEMA ═══════════════ */
+function applyTheme(t){document.documentElement.setAttribute('data-theme',t);settings.theme=t;if(g('set-theme'))g('set-theme').value=t;}
+g('theme-btn').addEventListener('click',()=>applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark'));
+
+/* ═══════════════ MATRICE ═══════════════ */
+function totalBolli(){return PANELS.reduce((s,n)=>{const p=PS[n];return(!p||p.cp)?s:s+(+p.bolli||0);},0);}
+function matCol(){const c=PS[COFANO_ANT];if(!c||c.cp)return 0;if(!(+c.bolli>0)&&!c.dsp&&!c.dap)return 0;return c.alu?2:1;}
+function calcAll(){
+  const coeff=+settings.coeff||1;
+  const b=totalBolli();
+  const ri=b===0?-1:MATRIX_MAX.findIndex(m=>b<=m);
+  const row=ri===-1?(b===0?0:MATRIX_MAX.length-1):ri;
+  const matPrice=b===0?0:matrix[row][matCol()+1];
+  const matWithCoeff=Math.round(matPrice*coeff*100)/100;
+  const cpTotal=PANELS.reduce((s,n)=>{const p=PS[n];return(!p||!p.cp)?s:s+(+p.cpPrice||0);},0);
+  const degPrice=degCat==='none'?0:(+deg[degCat]||0);
+  const cols=[T('colSans'),T('colAvec'),T('colAlu')];
+  return{matPrice,matWithCoeff,cpTotal,degPrice,bolli:b,coeff,col:cols[matCol()],total:matWithCoeff+cpTotal+degPrice};
+}
+function refreshTotal(){
+  const r=calcAll();
+  const useManual=(manualTotal!==null&&!isNaN(manualTotal));
+  const finalTotal=useManual?manualTotal:r.total;
+  if(g('quote-total'))g('quote-total').textContent=money(finalTotal);
+  const btnR=g('btn-recalc');if(btnR)btnR.classList.toggle('hidden',!useManual);
+  if(g('sum-detail')){
+    const parts=[r.bolli+' bolli',r.col];
+    if(r.cpTotal>0)parts.push('CP '+money(r.cpTotal));
+    if(r.degPrice>0)parts.push(T('dismantling')+' '+money(r.degPrice));
+    g('sum-detail').textContent=parts.join(' · ');
+  }
+}
+// V7: prezzo forzato — click sul totale per modificarlo
+function enableTotalEdit(){
+  const el=g('quote-total');if(!el)return;
+  el.addEventListener('click',()=>{
+    if(el.querySelector('input'))return; // già in edit
+    const r=calcAll();
+    const cur=(manualTotal!==null&&!isNaN(manualTotal))?manualTotal:r.total;
+    const wrap=document.createElement('span');wrap.className='sum-edit-wrap';
+    const inp=document.createElement('input');inp.type='number';inp.min='0';inp.step='0.01';inp.className='sum-edit-input';inp.value=(+cur).toFixed(2);
+    wrap.appendChild(inp);
+    el.innerHTML='';el.appendChild(wrap);
+    inp.focus();inp.select();
+    const commit=()=>{
+      const v=parseFloat(inp.value);
+      if(!isNaN(v)&&v>=0)manualTotal=Math.round(v*100)/100;
+      refreshTotal();
+    };
+    const cancel=()=>refreshTotal();
+    inp.addEventListener('blur',commit);
+    inp.addEventListener('keydown',e=>{
+      if(e.key==='Enter'){e.preventDefault();inp.blur();}
+      else if(e.key==='Escape'){e.preventDefault();inp.removeEventListener('blur',commit);cancel();}
+    });
+  });
+}
+
+/* ═══════════════ PANEL STATE ═══════════════ */
+function initPS(){PS={};PANELS.forEach(n=>{PS[n]={bolli:0,dsp:true,dap:false,cp:false,alu:false,cpPrice:0};});}
+function ensurePS(){PANELS.forEach(n=>{if(!PS[n]){PS[n]={bolli:0,dsp:true,dap:false,cp:false,alu:false,cpPrice:0};}else{if(PS[n].alu===undefined)PS[n].alu=false;if(PS[n].dsp===undefined)PS[n].dsp=true;if(PS[n].cpPrice===undefined)PS[n].cpPrice=0;}});}
+
+function renderPanels(){
+  const box=g('panel-list');if(!box)return;
+  ensurePS();box.innerHTML='';
+  PANELS.forEach(name=>{
+    const p=PS[name],isCof=(name===COFANO_ANT);
+    const item=document.createElement('div');item.className='panel-item';
+    const left=document.createElement('div');left.className='panel-left';
+    const nameDiv=document.createElement('div');nameDiv.className='panel-name';
+    nameDiv.textContent=name;
+    if(p.alu&&!p.cp){const b=document.createElement('span');b.className='alu-badge';b.textContent='ALU';nameDiv.appendChild(b);}
+    left.appendChild(nameDiv);
+    const ctrl=document.createElement('div');ctrl.className='panel-controls';
+    const inp=document.createElement('input');inp.type='number';inp.min='0';inp.className='bolli-input';
+    inp.placeholder=p.cp?'€ CP':'Bolli';inp.value=p.cp?(p.cpPrice||''):(p.bolli||'');
+    inp.addEventListener('input',()=>{if(PS[name].cp)PS[name].cpPrice=Math.max(0,+inp.value||0);else PS[name].bolli=Math.max(0,+inp.value||0);refreshTotal();});
+    ctrl.appendChild(inp);
+    const mk=(lbl,flag,cls)=>{
+      const b=document.createElement('button');b.type='button';b.textContent=lbl;
+      b.className='pill'+(PS[name][flag]?' '+cls:'');
+      if(flag==='alu'&&p.cp){b.disabled=true;b.style.opacity='.3';}
+      b.addEventListener('click',()=>{
+        const s=PS[name];
+        if(flag==='dsp'){s.dsp=!s.dsp;if(s.dsp){s.dap=false;s.cp=false;}}
+        else if(flag==='dap'){s.dap=!s.dap;if(s.dap){s.dsp=false;s.cp=false;}}
+        else if(flag==='cp'){s.cp=!s.cp;if(s.cp){s.dsp=false;s.dap=false;s.alu=false;}else s.dsp=true;}
+        else if(flag==='alu')s.alu=!s.alu;
+        renderPanels();
+      });
+      return b;
+    };
+    ctrl.appendChild(mk('DSP','dsp','p-dsp'));ctrl.appendChild(mk('DAP','dap','p-dap'));ctrl.appendChild(mk('CP','cp','p-cp'));ctrl.appendChild(mk(isCof?'ALU ★':'ALU','alu','p-alu'));
+    left.appendChild(ctrl);
+    const hint=document.createElement('div');hint.style.cssText='font-size:10px;color:var(--mu)';
+    hint.textContent=p.cp?'Sostituzione — inserisci prezzo':isCof&&p.alu?'★ ALU → '+T('colAlu'):isCof?'Cofano — determina colonna matrice':'DSP/DAP/CP · ALU se alluminio';
+    left.appendChild(hint);
+    const right=document.createElement('div');right.className='panel-right';
+    const pDiv=document.createElement('div');pDiv.className='panel-price';
+    pDiv.textContent=p.cp?money(p.cpPrice||0):(+p.bolli>0?p.bolli+' bolli':'—');
+    const hDiv=document.createElement('div');hDiv.className='panel-hint-r';
+    hDiv.textContent=p.cp?'CP':p.dsp?'DSP':p.dap?'DAP':'—';
+    if(p.cp||p.dap)hDiv.style.color='var(--dg)';
+    else if(p.dsp)hDiv.style.color='var(--tx)';
+    right.appendChild(pDiv);right.appendChild(hDiv);
+    item.appendChild(left);item.appendChild(right);box.appendChild(item);
+  });
+  refreshTotal();
+}
+
+/* ═══════════════ SMONTAGGIO ═══════════════ */
+function renderDegBtns(){
+  const box=g('deg-btns');if(!box)return;box.innerHTML='';
+  const cats=['none','A','B','C'];
+  const lbls=[T('degNone'),T('degA')+' — €'+deg.A,T('degB')+' — €'+deg.B,T('degC')+' — €'+deg.C];
+  cats.forEach((cat,i)=>{
+    const b=document.createElement('button');b.type='button';
+    b.className='pill'+(degCat===cat?' p-dsp':'');
+    b.textContent=i===0?T('degNone'):lbls[i];
+    b.addEventListener('click',()=>{degCat=cat;renderDegBtns();refreshTotal();});
+    box.appendChild(b);
+  });
+}
+
+/* ═══════════════ MODE ═══════════════ */
+function setMode(m){
+  if(curMode!==m)manualTotal=null;
+  curMode=m;
+  g('mode-assic').classList.toggle('active',m==='assicurativo');
+  g('mode-forfait').classList.toggle('active',m==='forfait');
+  g('assic-block').classList.toggle('hidden',m!=='assicurativo');
+  g('deg-block').classList.toggle('hidden',m!=='assicurativo');
+  g('forfait-block').classList.toggle('hidden',m!=='forfait');
+  const finsField=g('fld-ins');if(finsField)finsField.classList.toggle('hidden',m!=='assicurativo');
+}
+g('mode-assic').addEventListener('click',()=>setMode('assicurativo'));
+g('mode-forfait').addEventListener('click',()=>setMode('forfait'));
+g('inp-famount').addEventListener('input',()=>{if(g('forfait-total'))g('forfait-total').textContent=money(+gv('inp-famount')||0);});
+
+/* ═══════════════ LOOKUP ═══════════════ */
+function validPlate(v){return/^[A-Z0-9]{5,10}$/.test(v);}
+function validVin(v){return/^[A-HJ-NPR-Z0-9]{17}$/.test(v);}
+g('inp-lp').addEventListener('input',function(){this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'');});
+g('inp-lv').addEventListener('input',function(){this.value=this.value.toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g,'');});
+
+function doLookup(){
+  const plate=gv('inp-lp').trim(),vin=gv('inp-lv').trim();
+  let ok=true;
+  g('fld-lp').classList.remove('invalid');g('fld-lv').classList.remove('invalid');
+  if(!plate&&!vin){g('fld-lp').classList.add('invalid');g('fld-lv').classList.add('invalid');g('err-lp').textContent=T('noPlateVin');ok=false;}
+  else{if(plate&&!validPlate(plate)){g('fld-lp').classList.add('invalid');g('err-lp').textContent=T('errPlate');ok=false;}if(vin&&!validVin(vin)){g('fld-lv').classList.add('invalid');g('err-lv').textContent=T('errVin');ok=false;}}
+  if(!ok)return;
+  const found=practices.find(p=>(plate&&norm(p.plate)===plate)||(vin&&norm(p.vin)===vin));
+  g('pform-wrap').classList.remove('hidden');
+  if(found){editId=found.id;fillFrom(found);g('edit-notice').classList.remove('hidden');}
+  else{editId=null;clearForm();g('inp-plate').value=plate;g('inp-vin').value=vin;g('edit-notice').classList.add('hidden');}
+}
+g('btn-lookup').addEventListener('click',doLookup);
+g('inp-lp').addEventListener('keydown',e=>{if(e.key==='Enter')doLookup();});
+g('inp-lv').addEventListener('keydown',e=>{if(e.key==='Enter')doLookup();});
+
+function fillFrom(pr){
+  g('inp-cust').value=pr.customerName||'';g('inp-brand').value=pr.vehicleBrand||'';g('inp-model').value=pr.vehicleModel||'';
+  g('inp-plate').value=pr.plate||'';g('inp-vin').value=pr.vin||'';g('inp-color').value=pr.color||'';g('inp-notes').value=pr.notes||'';
+  if(g('inp-ins'))g('inp-ins').value=pr.insurance||'';
+  g('inp-date').value=pr.quoteDate||today();g('inp-rdate').value=pr.repairDate||'';
+  if(g('inp-pcamp'))g('inp-pcamp').value=pr.campaignId||'';
+  setMode(pr.pricingType||'assicurativo');
+  if(pr.pricingType==='forfait'){g('inp-famount').value=pr.totalAmount||0;g('inp-fref').value=pr.forfaitRef||'';if(g('forfait-total'))g('forfait-total').textContent=money(pr.totalAmount||0);}
+  initPS();if(pr.panels){PS=JSON.parse(JSON.stringify(pr.panels));ensurePS();}
+  degCat=pr.degCat||'none';manualTotal=null;renderPanels();renderDegBtns();
+}
+function clearForm(){
+  ['inp-cust','inp-brand','inp-model','inp-color','inp-notes','inp-famount','inp-fref','inp-rdate','inp-ins'].forEach(id=>{if(g(id))g(id).value='';});
+  if(g('inp-pcamp'))g('inp-pcamp').value='';
+  g('inp-date').value=today();initPS();degCat='none';manualTotal=null;renderPanels();renderDegBtns();
+}
+function doReset(){
+  editId=null;g('pform-wrap').classList.add('hidden');g('edit-notice').classList.add('hidden');
+  g('inp-lp').value='';g('inp-lv').value='';g('inp-plate').value='';g('inp-vin').value='';
+  clearForm();setMode('assicurativo');
+}
+g('btn-reset').addEventListener('click',doReset);
+g('btn-reset2').addEventListener('click',doReset);
+
+/* ═══════════════ VALIDATE ═══════════════ */
+function validate(){
+  let ok=true;
+  const fld=(id,v)=>{const e=g(id);if(!e)return;e.classList.toggle('invalid',!v);if(!v)ok=false;};
+  fld('fld-qdate',!!gv('inp-date'));fld('fld-cust',!!gv('inp-cust').trim());
+  const brand=gv('inp-brand').trim(),model=gv('inp-model').trim();
+  fld('fld-brand',!!(brand&&VEHICLES[brand]));fld('fld-model',!!(model&&brand&&(VEHICLES[brand]||[]).includes(model)));
+  const plate=gv('inp-plate').trim(),vin=gv('inp-vin').trim();
+  const hasId=!!(plate||vin);
+  const plateDup=!!plate&&practices.some(p=>p.id!==editId&&norm(p.plate)===plate);
+  const vinDup=!!vin&&practices.some(p=>p.id!==editId&&norm(p.vin)===vin);
+  fld('fld-plate',hasId&&(!plate||validPlate(plate))&&!plateDup);
+  fld('fld-vin',hasId&&(!vin||validVin(vin))&&!vinDup);
+  if(curMode==='forfait')fld('fld-famount',(+gv('inp-famount')||0)>0);
+  return ok;
+}
+
+/* ═══════════════ SAVE ═══════════════ */
+function doSave(){
+  if(!validate()){toast(T('errReq'));return;}
+  const plate=gv('inp-plate').trim(),vin=gv('inp-vin').trim();
+  const existing=editId?practices.find(p=>p.id===editId):null;
+  const r=calcAll();
+  const campId=gv('inp-pcamp')||'';
+  const insName=(curMode==='assicurativo')?gv('inp-ins').trim():'';
+  if(insName)rememberInsurance(insName);
+  const useManual=(curMode==='assicurativo'&&manualTotal!==null&&!isNaN(manualTotal));
+  const finalTotal=useManual?manualTotal:r.total;
+  const base={id:editId||uid(),createdAt:existing?existing.createdAt:now(),updatedAt:now(),quoteDate:gv('inp-date'),repairDate:gv('inp-rdate')||'',customerName:gv('inp-cust').trim(),insurance:insName,vehicleBrand:gv('inp-brand').trim(),vehicleModel:gv('inp-model').trim(),plate,vin,color:gv('inp-color').trim(),notes:gv('inp-notes').trim(),repairStatus:existing?existing.repairStatus:'Creata',billingStatus:existing?existing.billingStatus:'',pricingType:curMode,degCat,coeff:settings.coeff,campaignId:campId};
+  const pr=curMode==='forfait'
+    ?{...base,totalAmount:+gv('inp-famount')||0,forfaitRef:gv('inp-fref').trim(),panels:null,calcDetail:null,manualOverride:false}
+    :{...base,totalAmount:finalTotal,forfaitRef:'',panels:JSON.parse(JSON.stringify(PS)),calcDetail:{matPrice:r.matPrice,matWithCoeff:r.matWithCoeff,cpTotal:r.cpTotal,degPrice:r.degPrice,bolli:r.bolli,col:r.col,coeff:r.coeff,calcTotal:r.total},manualOverride:useManual};
+  if(editId)practices=practices.filter(p=>p.id!==editId);
+  practices.unshift(pr);save();editId=null;doReset();renderTable();toast(T('savedOk'));
+}
+g('btn-save').addEventListener('click',doSave);
+g('btn-save2').addEventListener('click',doSave);
+
+/* ═══════════════ PDF ═══════════════ */
+function doPdf(){
+  const brand=gv('inp-brand').trim(),model=gv('inp-model').trim();
+  if(!brand||!model){toast(T('errReq'));return;}
+  const r=calcAll();
+  const insName=(curMode==='assicurativo')?gv('inp-ins').trim():'';
+  if(insName)rememberInsurance(insName);
+  const useManual=(curMode==='assicurativo'&&manualTotal!==null&&!isNaN(manualTotal));
+  const finalTotal=useManual?manualTotal:r.total;
+  const fake={id:uid(),createdAt:now(),quoteDate:gv('inp-date')||today(),customerName:gv('inp-cust').trim(),insurance:insName,vehicleBrand:brand,vehicleModel:model,plate:gv('inp-plate').trim(),vin:gv('inp-vin').trim(),color:gv('inp-color').trim(),notes:gv('inp-notes').trim(),pricingType:curMode,totalAmount:curMode==='forfait'?(+gv('inp-famount')||0):finalTotal,forfaitRef:curMode==='forfait'?gv('inp-fref').trim():'',panels:curMode==='assicurativo'?JSON.parse(JSON.stringify(PS)):null,degCat,calcDetail:{...r,calcTotal:r.total},manualOverride:useManual};
+  downloadPdf(fake);
+}
+g('btn-pdf').addEventListener('click',doPdf);
+g('btn-pdf2').addEventListener('click',doPdf);
+
+function downloadPdf(p){
+  if(!window.jspdf||!window.jspdf.jsPDF){toast('jsPDF non caricato — connettiti a internet e ricarica.');return;}
+  const L=settings.pdfLang||'IT';
+  const t=DICT[L]||DICT.IT;
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'mm',format:'a4',orientation:'portrait'});
+  const PW=210,PH=297,ml=12,mr=12,cw=PW-ml-mr;
+  let y=12;
+  const PNAMES={IT:{'Cofano anteriore':'Cofano ant.','Parafango ant. DX':'Par. ant. DX','Portiera ant. DX':'P. ant. DX','Portiera post. DX':'P. post. DX','Parafango post. DX':'Par. post. DX','Baule':'Baule','Parafango post. SX':'Par. post. SX','Portiera post. SX':'P. post. SX','Portiera ant. SX':'P. ant. SX','Parafango ant. SX':'Par. ant. SX','Tetto':'Tetto','Montante DX':'Mont. DX','Montante SX':'Mont. SX'},EN:{'Cofano anteriore':'Front hood','Parafango ant. DX':'Fender FR','Portiera ant. DX':'Door FR','Portiera post. DX':'Door RR','Parafango post. DX':'Fender RR','Baule':'Boot','Parafango post. SX':'Fender RL','Portiera post. SX':'Door RL','Portiera ant. SX':'Door FL','Parafango ant. SX':'Fender FL','Tetto':'Roof','Montante DX':'Pillar R','Montante SX':'Pillar L'},FR:{'Cofano anteriore':'Capot av.','Parafango ant. DX':'Aile av. D','Portiera ant. DX':'Porte av. D','Portiera post. DX':'Porte ar. D','Parafango post. DX':'Aile ar. D','Baule':'Coffre','Parafango post. SX':'Aile ar. G','Portiera post. SX':'Porte ar. G','Portiera ant. SX':'Porte av. G','Parafango ant. SX':'Aile av. G','Tetto':'Toit','Montante DX':'Mont. D','Montante SX':'Mont. G'},ES:{'Cofano anteriore':'Capó del.','Parafango ant. DX':'Aleta del. D','Portiera ant. DX':'Puerta del. D','Portiera post. DX':'Puerta tr. D','Parafango post. DX':'Aleta tr. D','Baule':'Maletero','Parafango post. SX':'Aleta tr. I','Portiera post. SX':'Puerta tr. I','Portiera ant. SX':'Puerta del. I','Parafango ant. SX':'Aleta del. I','Tetto':'Techo','Montante DX':'Mont. D','Montante SX':'Mont. I'},DE:{'Cofano anteriore':'Motorhaube','Parafango ant. DX':'Kotfl. v. R','Portiera ant. DX':'Tür v. R','Portiera post. DX':'Tür h. R','Parafango post. DX':'Kotfl. h. R','Baule':'Kofferr.','Parafango post. SX':'Kotfl. h. L','Portiera post. SX':'Tür h. L','Portiera ant. SX':'Tür v. L','Parafango ant. SX':'Kotfl. v. L','Tetto':'Dach','Montante DX':'Säule R','Montante SX':'Säule L'}};
+  const PN=PNAMES[L]||PNAMES.IT;
+  const COLOR_TR={EN:{bianco:'White',nero:'Black',grigio:'Grey',argento:'Silver',rosso:'Red',blu:'Blue',verde:'Green',beige:'Beige',marrone:'Brown',arancio:'Orange',giallo:'Yellow',viola:'Purple',oro:'Gold',bronzo:'Bronze',azzurro:'Light blue'},FR:{bianco:'Blanc',nero:'Noir',grigio:'Gris',argento:'Argent',rosso:'Rouge',blu:'Bleu',verde:'Vert',beige:'Beige',marrone:'Marron',arancio:'Orange',giallo:'Jaune',viola:'Violet',oro:'Or',bronzo:'Bronze',azzurro:'Bleu clair'},ES:{bianco:'Blanco',nero:'Negro',grigio:'Gris',argento:'Plata',rosso:'Rojo',blu:'Azul',verde:'Verde',beige:'Beige',marrone:'Marrón',arancio:'Naranja',giallo:'Amarillo',viola:'Morado',oro:'Oro',bronzo:'Bronce',azzurro:'Azul claro'},DE:{bianco:'Weiß',nero:'Schwarz',grigio:'Grau',argento:'Silber',rosso:'Rot',blu:'Blau',verde:'Grün',beige:'Beige',marrone:'Braun',arancio:'Orange',giallo:'Gelb',viola:'Lila',oro:'Gold',bronzo:'Bronze',azzurro:'Hellblau'}};
+  const txC=c=>{if(!c)return'-';return(COLOR_TR[L]||{})[c.toLowerCase().trim()]||c;};
+  const DEG_LBL={IT:'Smontaggio',EN:'Removal',FR:'Dégarnissage',ES:'Desmontaje',DE:'Demontage'};
+  const degLbl=DEG_LBL[L]||'Smontaggio';
+  const sf=(st,sz,r,g2,b)=>{doc.setFont('helvetica',st);doc.setFontSize(sz);doc.setTextColor(r,g2,b);};
+  const fr=(x,yy,w,h,r,g2,b)=>{doc.setFillColor(r,g2,b);doc.rect(x,yy,w,h,'F');};
+
+  // HEADER: logo PDR Tech + badge
+  const logoY=y+8;
+  doc.setFontSize(22);doc.setFont('helvetica','bold');doc.setTextColor(79,99,255);
+  doc.text('PDR',ml,logoY);
+  const pdrW=doc.getTextWidth('PDR');
+  doc.setFont('helvetica','normal');doc.setTextColor(120,140,255);doc.text('Tech',ml+pdrW+1,logoY);
+  const badgeW=44,badgeX=PW-mr-badgeW,badgeY=logoY-9;
+  doc.setFillColor(15,23,42);doc.roundedRect(badgeX,badgeY,badgeW,10,2,2,'F');
+  sf('bold',9,255,255,255);doc.text(t.pdfTitle,badgeX+badgeW/2,badgeY+6.5,{align:'center'});
+  y=logoY+3+6.4;
+  sf('normal',7,100,116,139);
+  const hl=[[settings.tech,settings.phone].filter(Boolean).join(' · '),settings.email,[settings.addr,[settings.cap,settings.city].filter(Boolean).join(' ')].filter(Boolean).join(' — '),settings.vat?'P.IVA: '+settings.vat:''].filter(Boolean);
+  hl.forEach(l=>{if(l){doc.text(l,ml,y);y+=3.2;}});
+  y=Math.max(y,badgeY+12)+3;
+  doc.setDrawColor(220,225,235);doc.setLineWidth(0.25);doc.line(ml,y,PW-mr,y);y+=4;
+
+  // CLIENTE + VEICOLO
+  const bw=(cw-4)/2,rh=4.2;
+  const cli=clients.find(c=>c.name===p.customerName);
+  const cliRows=[];
+  if(p.customerName)cliRows.push({bold:true,val:p.customerName});
+  if(cli){if(cli.company&&cli.company!==cli.name)cliRows.push({val:cli.company});if(cli.contact)cliRows.push({val:cli.contact});if(cli.phone)cliRows.push({val:cli.phone});if(cli.email)cliRows.push({val:cli.email});if(cli.addr)cliRows.push({val:cli.addr});const loc=[cli.cap,cli.city,cli.country].filter(Boolean).join(' '); if(loc)cliRows.push({val:loc});if(cli.vat)cliRows.push({val:'VAT: '+cli.vat});}
+  const vrows=[[t.brand,p.vehicleBrand||'-'],[t.model,p.vehicleModel||'-']];
+  if(p.plate)vrows.push([t.plate,p.plate]);if(p.vin)vrows.push([t.vin,p.vin]);if(p.color)vrows.push([t.color,txC(p.color)]);
+  if(p.pricingType==='assicurativo'){if(p.insurance)vrows.push([t.pdfInsurance||'Assicurazione',p.insurance]);}
+  else{vrows.push([t.pdfType,t.pdfForfait]);}
+  vrows.push([t.qdate,fmtDate(p.quoteDate||p.createdAt)]);
+  if(p.repairDate)vrows.push([t.rdate,fmtDate(p.repairDate)]);
+  const boxH=Math.max(28,8+Math.max(cliRows.length,vrows.length)*rh);
+  doc.setFillColor(248,250,252);doc.setDrawColor(220,225,235);doc.setLineWidth(0.25);doc.roundedRect(ml,y,bw,boxH,2,2,'FD');
+  sf('bold',7,79,99,255);doc.text(t.pdfClient.toUpperCase(),ml+3,y+4);
+  doc.setDrawColor(220,225,235);doc.setLineWidth(0.2);doc.line(ml+3,y+5.5,ml+bw-3,y+5.5);
+  let cy=y+9;
+  cliRows.forEach(r=>{sf(r.bold?'bold':'normal',r.bold?8.5:7.5,r.bold?15:80,r.bold?23:90,r.bold?42:110);doc.text(r.val.slice(0,30),ml+3,cy);cy+=rh;});
+  const vx=ml+bw+4;
+  doc.setFillColor(248,250,252);doc.setDrawColor(220,225,235);doc.setLineWidth(0.25);doc.roundedRect(vx,y,bw,boxH,2,2,'FD');
+  sf('bold',7,79,99,255);doc.text(t.pdfVeh.toUpperCase(),vx+3,y+4);
+  doc.setDrawColor(220,225,235);doc.setLineWidth(0.2);doc.line(vx+3,y+5.5,vx+bw-3,y+5.5);
+  let vy=y+9;
+  vrows.forEach(([lb,vl])=>{sf('normal',7.5,100,116,139);doc.text(lb,vx+3,vy);sf('bold',7.5,15,23,42);doc.text(String(vl).slice(0,22),vx+bw-3,vy,{align:'right'});vy+=rh;});
+  y+=boxH+5;
+
+  // TABELLA PANNELLI
+  const tw=cw;
+  const cols=[tw*0.42,tw*0.16,tw*0.22,tw*0.20];
+  const cx=[ml,ml+cols[0],ml+cols[0]+cols[1],ml+cols[0]+cols[1]+cols[2]];
+  fr(ml,y,tw,6,240,243,250);
+  sf('bold',6.5,100,116,139);
+  doc.text((t.pdfPanel||'Pannello').toUpperCase(),cx[0]+2,y+4);
+  doc.text((t.pdfBolli||'Bolli').toUpperCase(),cx[1]+cols[1]/2,y+4,{align:'center'});
+  doc.text((t.pdfWork||'Lav.').toUpperCase(),cx[2]+2,y+4);
+  doc.text((t.pdfAmt||'€').toUpperCase(),cx[3]+cols[3]-2,y+4,{align:'right'});
+  doc.setDrawColor(220,225,235);doc.setLineWidth(0.2);doc.line(ml,y+6,ml+tw,y+6);
+  y+=6;
+  let hasRows=false;
+  PANELS.forEach((name,ri)=>{
+    const v=p.panels?p.panels[name]:null;if(!v)return;
+    if(!v.cp&&!(+v.bolli>0)&&!v.dsp&&!v.dap)return;
+    hasRows=true;
+    if(ri%2===0)fr(ml,y,tw,5.5,255,255,255);else fr(ml,y,tw,5.5,250,251,253);
+    const pn=(PN[name]||name).slice(0,28);
+    const lavMain=v.cp?'CP':(v.dsp?'DSP':v.dap?'DAP':'—');
+    const lavAlu=v.alu&&!v.cp?'ALU':'';
+    const bs=v.cp?'—':String(+v.bolli||0);
+    const amt=v.cp?money(v.cpPrice||0):'—';
+    sf('bold',7.5,15,23,42);doc.text(pn,cx[0]+2,y+3.8);
+    sf('normal',7.5,100,116,139);doc.text(bs,cx[1]+cols[1]/2,y+3.8,{align:'center'});
+    // colonna Lavorazione: DSP nero, DAP/CP rosso, ALU arancione
+    if(v.cp||v.dap)sf('bold',7.5,200,30,30);
+    else if(v.dsp)sf('bold',7.5,15,23,42);
+    else sf('normal',7.5,100,116,139);
+    doc.text(lavMain,cx[2]+2,y+3.8);
+    if(lavAlu){
+      const mainW=doc.getTextWidth(lavMain);
+      sf('bold',7.5,217,119,6); // arancione ALU
+      doc.text(lavAlu,cx[2]+2+mainW+2,y+3.8);
+    }
+    sf('bold',7.5,15,23,42);doc.text(amt,cx[3]+cols[3]-2,y+3.8,{align:'right'});
+    doc.setDrawColor(235,238,242);doc.setLineWidth(0.1);doc.line(ml,y+5.5,ml+tw,y+5.5);
+    y+=5.5;
+  });
+  if(!hasRows&&p.pricingType==='forfait'){sf('normal',8,100,116,139);doc.text(p.forfaitRef||'Forfait',ml+2,y+4);sf('bold',8,15,23,42);doc.text(money(p.totalAmount),ml+tw-2,y+4,{align:'right'});y+=6;}
+  else if(!hasRows){sf('normal',8,150,160,175);doc.text(t.pdfNone||'—',ml+2,y+4);y+=6;}
+  y+=3;
+
+  // TOTALE
+  const cd=p.calcDetail;
+  const totRows=[];
+  if(p.manualOverride){
+    // Prezzo concordato: niente breakdown, solo totale finale
+  } else if(cd){if(cd.matWithCoeff)totRows.push([cd.bolli+' '+(t.pdfBolliWord||'bolli'),money(cd.matWithCoeff)]);if(cd.cpTotal>0)totRows.push(['CP',money(cd.cpTotal)]);if(cd.degPrice>0)totRows.push([degLbl,money(cd.degPrice)]);}
+  else if(p.pricingType==='forfait')totRows.push(['Forfait',money(p.totalAmount)]);
+  totRows.push(['__TOTAL__',money(p.totalAmount)]);
+  const tbw=72,tbh=totRows.length*5.5+5;
+  doc.setFillColor(248,250,252);doc.setDrawColor(220,225,235);doc.setLineWidth(0.25);doc.roundedRect(PW-mr-tbw,y,tbw,tbh,2,2,'FD');
+  const hasBreakdown=totRows.length>1;
+  let ty=y+5;
+  totRows.forEach(([lb,vl])=>{
+    if(lb==='__TOTAL__'){if(hasBreakdown){doc.setDrawColor(200,210,225);doc.setLineWidth(0.2);doc.line(PW-mr-tbw+3,ty-2,PW-mr-3,ty-2);}sf('bold',10,79,99,255);doc.text(t.pdfTotal,PW-mr-tbw+3,ty+1);doc.text(vl,PW-mr-3,ty+1,{align:'right'});}
+    else{sf('normal',7.5,100,116,139);doc.text(lb,PW-mr-tbw+3,ty);sf('bold',7.5,15,23,42);doc.text(vl,PW-mr-3,ty,{align:'right'});}
+    ty+=5.5;
+  });
+  y+=tbh+4;
+
+  // NOTE
+  if(p.notes){doc.setFillColor(255,255,255);doc.setDrawColor(220,225,235);doc.setLineWidth(0.25);doc.roundedRect(ml,y,cw,12,2,2,'FD');sf('bold',6.5,100,116,139);doc.text((t.pdfNotes||'Note').toUpperCase(),ml+3,y+4);sf('normal',7.5,51,65,85);doc.text(p.notes,ml+3,y+9,{maxWidth:cw-6});y+=15;}
+
+  // FIRMA — posizionata in fondo, sopra il footer
+  const firmaY=PH-25;
+  doc.setLineDash([2,2]);doc.setDrawColor(180,190,210);doc.setLineWidth(0.25);doc.line(ml,firmaY,ml+80,firmaY);doc.setLineDash([]);
+  sf('normal',7,150,160,170);doc.text(t.pdfSign||'Firma',ml,firmaY+4);
+
+  // FOOTER
+  doc.setDrawColor(215,220,230);doc.setLineWidth(0.2);doc.line(ml,PH-11,PW-mr,PH-11);
+  sf('normal',6.5,150,160,170);doc.text(settings.vat?'P.IVA '+settings.vat:'',ml,PH-7);doc.text(settings.footer||'PDR Tech',PW-mr,PH-7,{align:'right'});
+
+  const fname=(p.plate||p.vin||'PDR').replace(/\s/g,'')+'.pdf';
+  doc.save(fname);toast('PDF: '+fname);
+}
+
+/* ═══════════════ TABLE ═══════════════ */
+function renderTable(){
+  const q=gv('fil-q').toLowerCase(),ty=gv('fil-type'),re=gv('fil-rep'),bill=gv('fil-bill');
+  const fil=practices.filter(p=>{if(q&&![p.customerName,p.vehicleBrand,p.vehicleModel,p.plate,p.vin].join(' ').toLowerCase().includes(q))return false;if(ty&&p.pricingType!==ty)return false;if(re&&p.repairStatus!==re)return false;if(bill&&(p.billingStatus||'Non fatturata')!==bill)return false;return true;});
+  const tbody=g('tbl-body');if(!tbody)return;
+  const t=DICT[settings.uiLang]||DICT.IT;
+  tbody.innerHTML=fil.map(p=>{
+    const repLbl=p.repairStatus==='Riparata'?t.repaired:t.created;
+    const bv=p.billingStatus||'Non fatturata';
+    const bLbl=bv==='Saldata'?t.billPaid:bv==='Fatturata'?t.billInv:t.billNone;
+    const bCls=bv==='Saldata'?'green':bv==='Fatturata'?'amber':'red';
+    return `<tr class="clickable${activeId===p.id?' sel':''}" data-id="${p.id}">
+      <td>${p.customerName||'-'}</td><td>${p.vehicleBrand||'-'} ${p.vehicleModel||''}</td>
+      <td>${p.plate||'-'}${p.vin?'<div style="font-size:10px;color:var(--mu)">'+p.vin+'</div>':''}</td>
+      <td><span class="tag blue">${p.pricingType==='forfait'?t.forfaitTag:t.assicTag}</span></td>
+      <td><span class="tag ${p.repairStatus==='Riparata'?'green':'amber'}">${repLbl}</span></td>
+      <td>${p.repairStatus!=='Riparata'?'<span class="tag">'+t.notAvail+'</span>':'<span class="tag '+bCls+'">'+bLbl+'</span>'}</td>
+      <td><strong>${money(p.totalAmount)}</strong></td></tr>`;
+  }).join('')||`<tr><td colspan="7" style="text-align:center;color:var(--mu);padding:20px">${T('noPractices')}</td></tr>`;
+  tbody.querySelectorAll('tr[data-id]').forEach(tr=>tr.addEventListener('click',()=>{activeId=tr.dataset.id;renderTable();renderDetail(tr.dataset.id);}));
+}
+g('fil-q').addEventListener('input',renderTable);g('fil-type').addEventListener('change',renderTable);g('fil-rep').addEventListener('change',renderTable);g('fil-bill').addEventListener('change',renderTable);
+
+/* ═══════════════ DETAIL ═══════════════ */
+function renderDetail(id){
+  const p=practices.find(x=>x.id===id);if(!p)return;
+  g('detail-box').classList.remove('hidden');
+  const cd=p.calcDetail;
+  const calcHtml=cd?(p.manualOverride?'':`<div style="background:var(--pl);border:1px solid var(--pr);border-radius:8px;padding:10px 14px;margin-bottom:10px;font-size:12px"><strong>${T('colSans').split(' ')[0]} calc.</strong> — ${cd.bolli} bolli · ${cd.col} · ${money(cd.matWithCoeff)}${cd.cpTotal>0?' · CP '+money(cd.cpTotal):''}${cd.degPrice>0?' · '+T('dismantling')+' '+money(cd.degPrice):''}</div>`):'';
+  const panelRows=p.panels?PANELS.map(n=>{const v=p.panels[n];if(!v)return'';if(!v.cp&&!(+v.bolli>0)&&!v.dsp&&!v.dap)return'';const info=v.cp?'CP €'+(v.cpPrice||0):(+v.bolli||0)+' bolli'+(v.dsp?' DSP':'')+(v.dap?' DAP':'')+(v.alu?' ALU':'');return'<div class="dpanel-row"><span>'+n+'</span><span style="color:var(--mu)">'+info+'</span></div>';}).join(''):'';
+  const dc=g('detail-content');
+  dc.innerHTML=`<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px"><div><div style="font-size:16px;font-weight:700">${p.vehicleBrand} ${p.vehicleModel}</div><div style="color:var(--mu);font-size:12px">${p.customerName||'-'} · ${p.plate||p.vin||'-'}</div></div><span class="tag blue">${p.pricingType==='forfait'?T('forfaitTag'):T('assicTag')}</span></div>
+  <div class="detail-grid"><div class="dc"><div class="dl">${T('plate')}</div><div class="dv">${p.plate||'-'}</div></div><div class="dc"><div class="dl">${T('vin')}</div><div class="dv" style="font-size:11px;word-break:break-all">${p.vin||'-'}</div></div><div class="dc"><div class="dl">${T('color')}</div><div class="dv">${p.color||'-'}</div></div><div class="dc"><div class="dl">${T('qdate')}</div><div class="dv">${fmtDate(p.quoteDate)}</div></div><div class="dc"><div class="dl">${T('rdate')}</div><div class="dv"><input type="date" id="edit-rdate-${id}" value="${p.repairDate||''}" class="inline-date"></div></div><div class="dc"><div class="dl">${T('thTot')}</div><div class="dv">${money(p.totalAmount)}</div></div>${p.pricingType==='assicurativo'&&p.insurance?'<div class="dc"><div class="dl">'+T('insurance')+'</div><div class="dv">'+p.insurance+'</div></div>':''}</div>
+  ${calcHtml}
+  <div style="margin-bottom:10px"><div class="sect-label">${T('repStatus')}</div><div id="det-rep-btns" style="display:flex;gap:6px;flex-wrap:wrap"></div></div>
+  <div style="margin-bottom:10px"><div class="sect-label">${T('billStatus')}</div><div id="det-bill-btns" style="display:flex;gap:6px;flex-wrap:wrap"></div></div>
+  ${panelRows?'<div style="margin-bottom:10px"><div class="sect-label">'+T('panelDetail')+'</div>'+panelRows+'</div>':''}
+  ${p.notes?'<div style="padding:10px;background:var(--sf2);border-radius:8px;font-size:12px;color:var(--mu);margin-bottom:10px">'+p.notes+'</div>':''}
+  <div id="det-act-btns" style="display:flex;gap:6px;flex-wrap:wrap"></div>`;
+  const rb=g('det-rep-btns');
+  [['Creata',T('created')],['Riparata',T('repaired')]].forEach(([real,lbl])=>{
+    const b=document.createElement('button');b.className='btn sm'+(p.repairStatus===real?(real==='Riparata'?' ok':' primary'):'');b.textContent=lbl;
+    b.addEventListener('click',()=>{
+      const i=practices.findIndex(x=>x.id===id);if(i<0)return;
+      practices[i].repairStatus=real;
+      if(real==='Riparata'){
+        if(!practices[i].repairDate)practices[i].repairDate=today();
+        if(!practices[i].billingStatus)practices[i].billingStatus='Non fatturata';
+      }else{
+        practices[i].repairDate='';
+        practices[i].billingStatus='';
+      }
+      practices[i].updatedAt=now();save();renderTable();renderDetail(id);
+    });
+    rb.appendChild(b);
+  });
+  const bb=g('det-bill-btns');
+  if(p.repairStatus!=='Riparata'){const sp=document.createElement('span');sp.className='tag';sp.style.color='var(--mu)';sp.textContent=T('notAvail');bb.appendChild(sp);}
+  else{[['Non fatturata',T('billNone')],['Fatturata',T('billInv')],['Saldata',T('billPaid')]].forEach(([real,lbl])=>{const b=document.createElement('button');b.className='btn sm'+(p.billingStatus===real?(real==='Saldata'?' ok':' primary'):'');b.textContent=lbl;b.addEventListener('click',()=>{const i=practices.findIndex(x=>x.id===id);if(i<0)return;practices[i].billingStatus=real;practices[i].updatedAt=now();save();renderTable();renderDetail(id);});bb.appendChild(b);});}
+  const ab=g('det-act-btns');
+  const mkB=(lbl,cls,cb)=>{const b=document.createElement('button');b.className='btn sm '+cls;b.textContent=lbl;b.addEventListener('click',cb);ab.appendChild(b);};
+  mkB(T('dlPdf'),'primary',()=>downloadPdf(p));
+  mkB(T('editP'),'',()=>{goTo('v-prev');editId=id;g('inp-lp').value=p.plate||'';g('inp-lv').value=p.vin||'';g('pform-wrap').classList.remove('hidden');fillFrom(p);g('edit-notice').classList.remove('hidden');});
+  mkB(T('delP'),'danger',()=>{if(!confirm(T('confirmDelP')))return;practices=practices.filter(x=>x.id!==id);activeId=null;save();renderTable();g('detail-box').classList.add('hidden');});
+  // V9: data riparazione modificabile inline
+  const rdInp=g('edit-rdate-'+id);
+  if(rdInp){
+    rdInp.addEventListener('change',()=>{
+      const i=practices.findIndex(x=>x.id===id);if(i<0)return;
+      practices[i].repairDate=rdInp.value||'';
+      practices[i].updatedAt=now();
+      save();renderTable();
+      // non rifaccio renderDetail per evitare loss focus, ma sincronizzo eventuale dashboard
+    });
+  }
+}
+
+/* ═══════════════ DASHBOARD ═══════════════ */
+function pInCampaign(p,c){
+  if(!c||!p)return false;
+  const refDate=p.repairDate||p.quoteDate||p.createdAt;
+  const cid=p.campaignId||autoCampaignFor(refDate);
+  return cid===c.id;
+}
+function autoCampaignFor(dateStrIso){
+  if(!dateStrIso)return null;
+  const d=new Date(dateStrIso); if(isNaN(d))return null;
+  // Trova ciclo aperto/chiuso che contiene la data
+  let best=null;
+  campaigns.forEach(c=>{
+    if(!c.start)return;
+    const s=new Date(c.start);
+    const e=c.end?new Date(c.end):new Date('2999-12-31');
+    if(d>=s&&d<=e){best=c;}
+  });
+  return best?best.id:null;
+}
+function pInFiscalYear(p,yr){
+  const d=new Date(p.quoteDate||p.createdAt);
+  return d.getFullYear()===yr;
+}
+function setDashView(v){
+  dashView=v;
+  g('dash-fiscal').classList.toggle('active',v==='fiscal');
+  g('dash-camp').classList.toggle('active',v==='campaign');
+  g('dash-fiscal-sel').classList.toggle('hidden',v!=='fiscal');
+  g('dash-camp-sel').classList.toggle('hidden',v!=='campaign');
+  renderDash();
+}
+function shortMoney(v){
+  v=+v||0;if(v===0)return'';
+  if(v>=1000)return Math.round(v/100)/10+'k';
+  return Math.round(v)+'';
+}
+function renderDash(){
+  const t=DICT[settings.uiLang]||DICT.IT;
+  // popola selettori
+  const yrSel=g('sel-dashyr');
+  if(yrSel){
+    const years=new Set([new Date().getFullYear()]);
+    practices.forEach(p=>{const d=new Date(p.quoteDate||p.createdAt);if(!isNaN(d))years.add(d.getFullYear());});
+    const arr=[...years].sort((a,b)=>b-a);
+    const cur=+yrSel.value||arr[0];
+    yrSel.innerHTML=arr.map(y=>`<option value="${y}"${y===cur?' selected':''}>${y}</option>`).join('');
+  }
+  const cSel=g('sel-dashcamp');
+  if(cSel){
+    const cur=cSel.value||activeCampaignId||(campaigns[0]?campaigns[0].id:'');
+    cSel.innerHTML=campaigns.length?campaigns.map(c=>`<option value="${c.id}"${c.id===cur?' selected':''}>${c.name}</option>`).join(''):'<option value="">— Nessun ciclo creato —</option>';
+  }
+  // filtro practices
+  let filtered;
+  let label='';
+  if(dashView==='fiscal'){
+    const yr=+gv('sel-dashyr')||new Date().getFullYear();
+    filtered=practices.filter(p=>pInFiscalYear(p,yr));
+    label=String(yr);
+  }else{
+    const cid=gv('sel-dashcamp');
+    const c=campaigns.find(x=>x.id===cid);
+    filtered=c?practices.filter(p=>pInCampaign(p,c)):[];
+    label=c?c.name:'—';
+  }
+  // KPI - V9: 4 categorie con count + importo
+  const toRepair=filtered.filter(p=>p.repairStatus!=='Riparata'); // preventivata, ancora da riparare
+  const toBill=filtered.filter(p=>p.repairStatus==='Riparata'&&(!p.billingStatus||p.billingStatus===''||p.billingStatus==='Non fatt.'||p.billingStatus==='Non fatturata'));
+  const billed=filtered.filter(p=>p.repairStatus==='Riparata'&&p.billingStatus==='Fatturata');
+  const paid=filtered.filter(p=>p.repairStatus==='Riparata'&&p.billingStatus==='Saldata');
+  const sum=arr=>arr.reduce((a,p)=>a+(+p.totalAmount||0),0);
+  g('kpi-grid').innerHTML=[
+    {l:t.kToRepair||'Auto preventivate da riparare',n:toRepair.length,v:sum(toRepair)},
+    {l:t.kToBill||'Auto riparate da fatturare',n:toBill.length,v:sum(toBill)},
+    {l:t.kBilled||'Auto riparate da incassare',n:billed.length,v:sum(billed)},
+    {l:t.kPaid||'Auto riparate e incassate',n:paid.length,v:sum(paid)}
+  ].map(k=>'<div class="kpi-card"><div class="kpi-label">'+k.l+'</div><div class="kpi-value">'+k.n+'</div><div class="kpi-sub">'+money(k.v)+'</div></div>').join('');
+  g('dash-yr').textContent=label;
+  // bar chart mensile
+  if(dashView==='fiscal'){
+    const yr=+gv('sel-dashyr')||new Date().getFullYear();
+    const byM=Array(12).fill(0);
+    practices.filter(p=>pInFiscalYear(p,yr)).forEach(p=>{const d=new Date(p.quoteDate||p.createdAt);byM[d.getMonth()]+=(+p.totalAmount||0);});
+    const maxV=Math.max(...byM,1);const MN=t.months;
+    g('bar-chart').innerHTML=byM.map((v,i)=>`<div class="bar-col" title="${MN[i]}: ${money(v)}"><span class="bar-vlabel">${shortMoney(v)}</span><div class="bar-inner" style="height:${Math.round((v/maxV)*90)}px"></div><span class="bar-mlabel">${MN[i]}</span></div>`).join('');
+  }else{
+    // raggruppa per mese ma su tutto il ciclo (timeline)
+    const cid=gv('sel-dashcamp');
+    const c=campaigns.find(x=>x.id===cid);
+    if(c&&c.start){
+      const months=[];const s=new Date(c.start);const e=c.end?new Date(c.end):new Date();
+      const cur=new Date(s.getFullYear(),s.getMonth(),1);
+      while(cur<=e){months.push({y:cur.getFullYear(),m:cur.getMonth(),v:0});cur.setMonth(cur.getMonth()+1);}
+      filtered.forEach(p=>{const d=new Date(p.quoteDate||p.createdAt);const idx=months.findIndex(x=>x.y===d.getFullYear()&&x.m===d.getMonth());if(idx>=0)months[idx].v+=(+p.totalAmount||0);});
+      const maxV=Math.max(...months.map(x=>x.v),1);const MN=t.months;
+      g('bar-chart').innerHTML=months.map(x=>`<div class="bar-col" title="${MN[x.m]} ${x.y}: ${money(x.v)}"><span class="bar-vlabel">${shortMoney(x.v)}</span><div class="bar-inner" style="height:${Math.round((x.v/maxV)*90)}px"></div><span class="bar-mlabel">${MN[x.m]}/${String(x.y).slice(2)}</span></div>`).join('');
+    }else{
+      g('bar-chart').innerHTML='<div style="color:var(--mu);font-size:12px;padding:10px">Nessun ciclo selezionato.</div>';
+    }
+  }
+  // recent practices (within selected filter)
+  g('dash-recent').innerHTML=filtered.slice(0,6).map(p=>`<div class="mini-row"><div><strong>${p.customerName||'-'}</strong> <span style="color:var(--mu)">${p.vehicleBrand||''} ${p.vehicleModel||''}</span></div><div style="display:flex;gap:6px;align-items:center"><span class="tag ${p.repairStatus==='Riparata'?'green':'amber'}">${p.repairStatus==='Riparata'?t.repaired:t.created}</span><strong>${money(p.totalAmount)}</strong></div></div>`).join('')||`<div style="color:var(--mu);padding:10px">${t.noPractices}</div>`;
+}
+
+/* ═══════════════ CLIENTI ═══════════════ */
+function setCliType(t){cliType=t;g('ctype-priv').classList.toggle('active',t==='privato');g('ctype-biz').classList.toggle('active',t==='azienda');g('cli-priv-form').classList.toggle('hidden',t!=='privato');g('cli-biz-form').classList.toggle('hidden',t!=='azienda');}
+g('ctype-priv').addEventListener('click',()=>setCliType('privato'));
+g('ctype-biz').addEventListener('click',()=>setCliType('azienda'));
+function validateClient(){
+  let ok=true;const fld=(id,v)=>{const e=g(id);if(!e)return;e.classList.toggle('invalid',!v);if(!v)ok=false;};
+  const phoneRe=/^[+\d\s\-()\\.]{7,20}$/;
+  if(cliType==='privato'){fld('fld-cfname',!!gv('inp-cfname').trim());fld('fld-clname',!!gv('inp-clname').trim());const ph=gv('inp-cphone').trim();fld('fld-cphone',!ph||phoneRe.test(ph));}
+  else{fld('fld-cco',!!gv('inp-cco').trim());const ph=gv('inp-cphone2').trim();fld('fld-cphone2',!ph||phoneRe.test(ph));}
+  return ok;
+}
+g('btn-savecli').addEventListener('click',()=>{
+  if(!validateClient()){toast(T('errReq'));return;}
+  let name,rec;
+  if(cliType==='privato'){name=(gv('inp-cfname')+' '+gv('inp-clname')).trim();rec={id:uid(),type:'privato',name,phone:gv('inp-cphone').trim(),email:gv('inp-cemail').trim(),addr:gv('inp-caddr_p').trim(),cap:gv('inp-ccap_p').trim(),city:gv('inp-ccity').trim(),notes:gv('inp-cnotes').trim(),company:'',contact:'',vat:'',country:''};}
+  else{name=gv('inp-cco').trim();rec={id:uid(),type:'azienda',name,company:name,contact:gv('inp-ccontact').trim(),phone:gv('inp-cphone2').trim(),email:gv('inp-cemail2').trim(),vat:gv('inp-cvat').trim(),addr:gv('inp-caddr').trim(),cap:gv('inp-ccap2').trim(),city:gv('inp-ccity2').trim(),country:gv('inp-ccountry2').trim(),notes:gv('inp-cnotes2').trim()};}
+  if(clients.some(c=>c.name.toLowerCase()===name.toLowerCase())){toast(T('errReq'));return;}
+  clients.unshift(rec);save();
+  ['inp-cfname','inp-clname','inp-cphone','inp-cemail','inp-caddr_p','inp-ccap_p','inp-ccity','inp-cnotes','inp-cco','inp-ccontact','inp-cphone2','inp-cemail2','inp-cvat','inp-caddr','inp-ccap2','inp-ccity2','inp-ccountry2','inp-cnotes2'].forEach(id=>{if(g(id))g(id).value='';});
+  renderClients();toast(T('cliSaved'));
+});
+function renderClients(){
+  const box=g('cli-list');if(!box)return;box.innerHTML='';
+  if(!clients.length){box.innerHTML='<div style="color:var(--mu);font-size:13px">'+T('noCli')+'</div>';return;}
+  clients.forEach(c=>{
+    const row=document.createElement('div');row.className='mini-row';
+    const info=document.createElement('div');
+    const sub=[c.company&&c.company!==c.name?c.company:'',c.phone].filter(Boolean).join(' · ');
+    info.innerHTML='<strong>'+c.name+'</strong>'+(sub?'<span style="color:var(--mu);font-size:12px"> · '+sub+'</span>':'');
+    const btns=document.createElement('div');btns.style.cssText='display:flex;gap:6px';
+    const bU=document.createElement('button');bU.className='btn sm';bU.textContent=T('use');bU.addEventListener('click',()=>{goTo('v-prev');if(g('inp-cust'))g('inp-cust').value=c.name;});
+    const bD=document.createElement('button');bD.className='btn sm danger';bD.textContent='✕';bD.addEventListener('click',()=>{if(!confirm(T('confirmDelC')))return;clients=clients.filter(x=>x.id!==c.id);save();renderClients();});
+    btns.appendChild(bU);btns.appendChild(bD);row.appendChild(info);row.appendChild(btns);box.appendChild(row);
+  });
+}
+
+/* ═══════════════ CAMPAGNE / CICLI LAVORATIVI ═══════════════ */
+function renderCampaigns(){
+  const box=g('camp-list');if(!box)return;
+  if(!campaigns.length){box.innerHTML='<div style="color:var(--mu);font-size:12px;padding:8px 0">Nessun ciclo creato. Crea il primo qui sotto.</div>';return;}
+  box.innerHTML='';
+  campaigns.forEach(c=>{
+    const cnt=practices.filter(p=>(p.campaignId||autoCampaignFor(p.repairDate||p.quoteDate||p.createdAt))===c.id).length;
+    const row=document.createElement('div');row.className='mini-row';
+    const info=document.createElement('div');
+    info.innerHTML='<strong>'+c.name+'</strong><div style="font-size:11px;color:var(--mu);margin-top:2px">'+fmtDate(c.start)+' → '+(c.end?fmtDate(c.end):'in corso')+' · '+cnt+' pratiche</div>';
+    const btns=document.createElement('div');btns.style.cssText='display:flex;gap:6px';
+    const bC=document.createElement('button');bC.className='btn sm';bC.textContent=c.end?'Riapri':'Chiudi';
+    bC.addEventListener('click',()=>{if(c.end){c.end='';}else{const d=prompt('Data di chiusura (GG/MM/AAAA):',new Date().toLocaleDateString('it-IT'));if(!d)return;const parts=d.split('/');if(parts.length!==3){toast('Formato data non valido');return;}c.end=parts[2]+'-'+parts[1].padStart(2,'0')+'-'+parts[0].padStart(2,'0');}save();renderCampaigns();fillPracticeCampaignOptions();});
+    const bD=document.createElement('button');bD.className='btn sm danger';bD.textContent='✕';
+    bD.addEventListener('click',()=>{if(!confirm('Eliminare il ciclo "'+c.name+'"? Le pratiche assegnate verranno scollegate.'))return;campaigns=campaigns.filter(x=>x.id!==c.id);practices.forEach(p=>{if(p.campaignId===c.id)p.campaignId='';});save();renderCampaigns();fillPracticeCampaignOptions();});
+    btns.appendChild(bC);btns.appendChild(bD);
+    row.appendChild(info);row.appendChild(btns);box.appendChild(row);
+  });
+}
+function fillPracticeCampaignOptions(){
+  const sel=g('inp-pcamp');if(!sel)return;
+  const opts=['<option value="">— Auto (in base alla data) —</option>'];
+  campaigns.forEach(c=>opts.push('<option value="'+c.id+'">'+c.name+(c.end?' (chiuso)':'')+'</option>'));
+  sel.innerHTML=opts.join('');
+}
+const _g_btn_addcamp=g('btn-addcamp');
+if(_g_btn_addcamp)_g_btn_addcamp.addEventListener('click',()=>{
+  const name=gv('inp-campname').trim();
+  const start=gv('inp-campstart');
+  const end=gv('inp-campend');
+  if(!name||!start){toast('Nome e data inizio obbligatori');return;}
+  campaigns.push({id:uid(),name,start,end:end||''});
+  save();
+  g('inp-campname').value='';g('inp-campstart').value='';g('inp-campend').value='';
+  renderCampaigns();fillPracticeCampaignOptions();
+  toast('Ciclo creato');
+});
+
+/* ═══════════════ AUTOCOMPLETE ═══════════════ */
+function drawSug(boxId,items,cb){const box=g(boxId);if(!box)return;box.innerHTML='';box.classList.toggle('hidden',!items.length);items.slice(0,14).forEach(v=>{const d=document.createElement('div');d.className='sw-item';d.textContent=v;d.addEventListener('mousedown',e=>{e.preventDefault();cb(v);box.classList.add('hidden');});box.appendChild(d);});}
+g('inp-brand').addEventListener('input',()=>{g('inp-model').value='';const v=gv('inp-brand').toLowerCase();drawSug('sug-brand',Object.keys(VEHICLES).filter(b=>b.toLowerCase().includes(v)).sort(),val=>{g('inp-brand').value=val;g('inp-model').value='';drawModels();});});
+g('inp-brand').addEventListener('focus',()=>{const v=gv('inp-brand').toLowerCase();drawSug('sug-brand',Object.keys(VEHICLES).filter(b=>b.toLowerCase().includes(v)).sort(),val=>{g('inp-brand').value=val;g('inp-model').value='';drawModels();});});
+function drawModels(){const brand=gv('inp-brand').trim(),v=gv('inp-model').toLowerCase();if(!brand||!VEHICLES[brand]){g('sug-model').classList.add('hidden');return;}drawSug('sug-model',(VEHICLES[brand]||[]).filter(m=>m.toLowerCase().includes(v)),val=>{g('inp-model').value=val;});}
+g('inp-model').addEventListener('input',drawModels);g('inp-model').addEventListener('focus',drawModels);
+g('inp-color').addEventListener('input',()=>{const v=gv('inp-color').toLowerCase();drawSug('sug-color',COLORS.filter(c=>c.toLowerCase().includes(v)),val=>{g('inp-color').value=val;});});
+g('inp-color').addEventListener('focus',()=>drawSug('sug-color',COLORS,val=>{g('inp-color').value=val;}));
+function allInsurances(){const set=new Set([...INSURANCES,...customInsurances.filter(Boolean)]);return [...set].sort((a,b)=>a.localeCompare(b));}
+function rememberInsurance(name){if(!name)return;const n=name.trim();if(!n)return;const exists=[...INSURANCES,...customInsurances].some(x=>x.toLowerCase()===n.toLowerCase());if(!exists){customInsurances.push(n);save();}}
+if(g('inp-ins')){
+  g('inp-ins').addEventListener('input',()=>{const v=gv('inp-ins').toLowerCase();drawSug('sug-ins',allInsurances().filter(c=>c.toLowerCase().includes(v)),val=>{g('inp-ins').value=val;});});
+  g('inp-ins').addEventListener('focus',()=>drawSug('sug-ins',allInsurances(),val=>{g('inp-ins').value=val;}));
+}
+g('inp-cust').addEventListener('input',()=>{const v=gv('inp-cust').toLowerCase();const list=clients.filter(c=>[c.name,c.company].join(' ').toLowerCase().includes(v));const box=g('sug-cust');if(!box)return;box.innerHTML='';box.classList.toggle('hidden',!list.length);list.slice(0,8).forEach(c=>{const d=document.createElement('div');d.className='sw-item';d.innerHTML='<strong>'+c.name+'</strong>'+(c.company&&c.company!==c.name?' · '+c.company:'');d.addEventListener('mousedown',e=>{e.preventDefault();g('inp-cust').value=c.name;box.classList.add('hidden');});box.appendChild(d);});});
+g('inp-cust').addEventListener('focus',()=>g('inp-cust').dispatchEvent(new Event('input')));
+document.addEventListener('click',e=>{['sug-brand','sug-model','sug-cust','sug-color','sug-ins'].forEach(id=>{const b=g(id);if(b&&!b.contains(e.target))b.classList.add('hidden');});});
+
+/* ═══════════════ SETTINGS ═══════════════ */
+function fillSettings(){
+  ['company','tech','email','phone','vat','addr','cap','city','country','footer'].forEach(k=>{if(g('set-'+k))g('set-'+k).value=settings[k]||'';});
+  if(g('set-uilang'))g('set-uilang').value=settings.uiLang||'IT';
+  if(g('set-pdflang'))g('set-pdflang').value=settings.pdfLang||'IT';
+  if(g('set-theme'))g('set-theme').value=settings.theme||'dark';
+  const c=+settings.coeff||1;
+  if(g('coeff-slider'))g('coeff-slider').value=c;if(g('coeff-display'))g('coeff-display').textContent='×'+c.toFixed(2);if(g('coeff-input'))g('coeff-input').value=c.toFixed(2);
+  if(g('deg-A-set'))g('deg-A-set').value=deg.A||0;if(g('deg-B-set'))g('deg-B-set').value=deg.B||0;if(g('deg-C-set'))g('deg-C-set').value=deg.C||0;
+  renderTariffTable();
+  renderCampaigns();
+}
+function renderTariffTable(){
+  const tbody=g('tariff-body');if(!tbody)return;tbody.innerHTML='';
+  matrix.forEach((row,i)=>{const tr=document.createElement('tr');const td0=document.createElement('td');td0.textContent=row[0];tr.appendChild(td0);[1,2,3].forEach(ci=>{const td=document.createElement('td');const inp=document.createElement('input');inp.type='number';inp.min='0';inp.step='1';inp.value=row[ci];inp.addEventListener('input',()=>{matrix[i][ci]=+inp.value||0;});td.appendChild(inp);tr.appendChild(td);});tbody.appendChild(tr);});
+}
+g('coeff-slider').addEventListener('input',function(){const v=+this.value;settings.coeff=v;g('coeff-display').textContent='×'+v.toFixed(2);g('coeff-input').value=v.toFixed(2);refreshTotal();});
+g('coeff-input').addEventListener('input',function(){const v=Math.min(2.5,Math.max(0.25,+this.value||1));settings.coeff=v;g('coeff-slider').value=v;g('coeff-display').textContent='×'+v.toFixed(2);refreshTotal();});
+g('btn-saveset').addEventListener('click',()=>{
+  ['company','tech','email','phone','vat','addr','cap','city','country','footer'].forEach(k=>{if(g('set-'+k))settings[k]=g('set-'+k).value;});
+  settings.uiLang=gv('set-uilang')||'IT';settings.pdfLang=gv('set-pdflang')||'IT';settings.theme=gv('set-theme')||'light';settings.coeff=+gv('coeff-input')||1;
+  deg.A=+gv('deg-A-set')||0;deg.B=+gv('deg-B-set')||0;deg.C=+gv('deg-C-set')||0;
+  save();applyTheme(settings.theme);applyI18n();toast((DICT[settings.uiLang]||DICT.IT).setsSaved);
+});
+g('btn-clearall').addEventListener('click',()=>{if(!confirm(T('confirmClear')))return;practices=[];clients=[];campaigns=[];customInsurances=[];save();renderTable();g('detail-box').classList.add('hidden');activeId=null;toast(T('dataCleared'));});
+
+/* ═══════════════ AUTH ═══════════════ */
+let authMode='login'; // 'login' | 'signup' | 'forgot'
+
+function showAuthScreen(){
+  document.getElementById('auth-screen').classList.remove('hidden');
+  document.getElementById('app-main').classList.add('hidden');
+}
+function showApp(){
+  document.getElementById('auth-screen').classList.add('hidden');
+  document.getElementById('app-main').classList.remove('hidden');
+}
+function setAuthMode(m){
+  authMode=m;
+  const tL=document.getElementById('tab-login'),tS=document.getElementById('tab-signup');
+  const sub=document.getElementById('auth-submit'),pwd=document.getElementById('auth-pwd-field'),fg=document.getElementById('auth-forgot'),fm=document.getElementById('auth-forgot-msg');
+  tL.classList.toggle('active',m==='login');
+  tS.classList.toggle('active',m==='signup');
+  if(m==='forgot'){
+    pwd.style.display='none';
+    sub.textContent='Invia link reset';
+    fg.style.display='none';
+    fm.style.display='block';fm.className='auth-msg';fm.textContent='Inserisci l\'email per ricevere il link di reset.';
+    tL.classList.remove('active');tS.classList.remove('active');
+  }else{
+    pwd.style.display='';
+    sub.textContent=m==='login'?'Accedi':'Registrati';
+    fg.style.display=m==='login'?'block':'none';
+    fm.style.display='none';
+  }
+  document.getElementById('auth-msg').textContent='';
+  document.getElementById('auth-msg').className='auth-msg';
+}
+function authMsg(text,type){
+  const m=document.getElementById('auth-msg');
+  m.textContent=text||'';
+  m.className='auth-msg'+(type?' '+type:'');
+}
+async function doAuthSubmit(){
+  if(!supa){authMsg('Connessione Supabase non disponibile','err');return;}
+  const email=document.getElementById('auth-email').value.trim();
+  const pwd=document.getElementById('auth-pwd').value;
+  const btn=document.getElementById('auth-submit');
+  if(!email){authMsg('Inserisci email','err');return;}
+  btn.disabled=true;
+  try{
+    if(authMode==='login'){
+      if(!pwd){authMsg('Inserisci password','err');btn.disabled=false;return;}
+      const {data,error}=await supa.auth.signInWithPassword({email,password:pwd});
+      if(error)throw error;
+      authMsg('Accesso effettuato','ok');
+      await onAuthenticated(data.user);
+    }else if(authMode==='signup'){
+      if(!pwd||pwd.length<6){authMsg('Password almeno 6 caratteri','err');btn.disabled=false;return;}
+      const {data,error}=await supa.auth.signUp({email,password:pwd});
+      if(error)throw error;
+      authMsg('Registrazione inviata! Controlla la tua email per confermare l\'account.','ok');
+    }else if(authMode==='forgot'){
+      const {error}=await supa.auth.resetPasswordForEmail(email);
+      if(error)throw error;
+      authMsg('Email di reset inviata. Controlla la posta.','ok');
+    }
+  }catch(e){
+    authMsg(e.message||'Errore di autenticazione','err');
+  }
+  btn.disabled=false;
+}
+async function doLogout(){
+  if(!supa)return;
+  setSyncStatus('busy','logout…');
+  try{await supa.auth.signOut();}catch(e){}
+  currentUser=null;
+  // pulisco stato e localStorage del client (i dati cloud restano sicuri)
+  practices=[];clients=[];campaigns=[];customInsurances=[];
+  try{Object.values(SK).forEach(k=>localStorage.removeItem(k));}catch(e){}
+  document.getElementById('user-email').textContent='';
+  setSyncStatus('offline','offline');
+  showAuthScreen();
+  setAuthMode('login');
+}
+async function onAuthenticated(user){
+  currentUser=user;
+  document.getElementById('user-email').textContent=user.email||'';
+  showApp();
+  setSyncStatus('busy','sync…');
+  await cloudPullAll();
+  setSyncStatus('ok','sync ok');
+  // continuo init normale dopo auth
+  applyTheme(settings.theme||'dark');initPS();applyI18n();renderDegBtns();
+  if(g('inp-date'))g('inp-date').value=today();
+  fillPracticeCampaignOptions();
+  renderTable();renderClients();
+}
+
+/* ═══════════════ CLOUD SYNC (placeholder iniziale) ═══════════════ */
+// Layer di sync iniziale: per ora carico i dati esistenti su localStorage
+// (se ci sono) e ascolto login/logout. Il sync completo lato cloud verrà
+// completato nella prossima iterazione.
+async function cloudPullAll(){
+  // Per ora: load locale - nelle prossime versioni: pull da Supabase
+  load();
+}
+async function cloudPushAll(){
+  // Per ora: save locale - nelle prossime versioni: push su Supabase
+  save();
+}
+
+/* ═══════════════ INIT ═══════════════ */
+async function init(){
+  // listeners base auth screen
+  document.getElementById('tab-login').addEventListener('click',()=>setAuthMode('login'));
+  document.getElementById('tab-signup').addEventListener('click',()=>setAuthMode('signup'));
+  document.getElementById('auth-forgot').addEventListener('click',()=>setAuthMode('forgot'));
+  document.getElementById('auth-submit').addEventListener('click',doAuthSubmit);
+  document.getElementById('auth-email').addEventListener('keydown',e=>{if(e.key==='Enter')doAuthSubmit();});
+  document.getElementById('auth-pwd').addEventListener('keydown',e=>{if(e.key==='Enter')doAuthSubmit();});
+  // logout
+  const lo=document.getElementById('logout-btn');if(lo)lo.addEventListener('click',()=>{if(confirm('Vuoi uscire?'))doLogout();});
+  // theme & enable total edit etc (sempre disponibili dopo login)
+  enableTotalEdit();
+  const btnR=g('btn-recalc');if(btnR)btnR.addEventListener('click',()=>{manualTotal=null;refreshTotal();});
+  const dF=g('dash-fiscal'),dC=g('dash-camp'),sY=g('sel-dashyr'),sC=g('sel-dashcamp');
+  if(dF)dF.addEventListener('click',()=>setDashView('fiscal'));
+  if(dC)dC.addEventListener('click',()=>setDashView('campaign'));
+  if(sY)sY.addEventListener('change',renderDash);
+  if(sC)sC.addEventListener('change',renderDash);
+  // verifico sessione esistente
+  if(supa){
+    setSyncStatus('busy','check…');
+    try{
+      const {data}=await supa.auth.getSession();
+      if(data&&data.session&&data.session.user){
+        await onAuthenticated(data.session.user);
+        return;
+      }
+    }catch(e){console.error(e);}
+    // ascolto auth state changes
+    supa.auth.onAuthStateChange((event,session)=>{
+      if(event==='SIGNED_OUT'){doLogout();}
+    });
+  }
+  // non autenticato → mostra login
+  setSyncStatus('offline','offline');
+  showAuthScreen();
+  setAuthMode('login');
+}
+document.addEventListener('DOMContentLoaded',init);
+</script>
+</body>
+</html>
