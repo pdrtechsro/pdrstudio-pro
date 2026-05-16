@@ -944,25 +944,39 @@ function downloadPdf(p){
   sf('bold',9,255,255,255);doc.text(t.pdfTitle,badgeX+badgeW/2,badgeY+6.5,{align:'center'});
   y=logoY+3+6.4+2;
   const UP=s=>(s||'').toString().toUpperCase();
-  // riga 1 (grassetto): NOME TECNICO · RAGIONE SOCIALE · P.IVA
-  const line1=[UP(settings.tech),UP(settings.company),settings.vat?'P.IVA '+UP(settings.vat):''].filter(Boolean).join(' · ');
-  // riga 2: indirizzo completo
-  const line2=UP([settings.addr,[settings.cap,settings.city].filter(Boolean).join(' '),settings.country].filter(Boolean).join(' — '));
-  // riga 3: email · cellulare (email/telefono in minuscolo come richiesto)
-  const line3=[settings.email,settings.phone].filter(Boolean).join(' · ');
-  if(line1){sf('bold',7.5,15,23,42);doc.text(line1,ml,y);y+=3.4;}
+  // Riga 1 (bold): Ragione sociale o Nome tecnico
+  const companyName=UP(settings.company||settings.tech);
+  // Riga 2: Indirizzo completo (via, CAP città, nazione)
+  const addrLine=UP([settings.addr,[settings.cap,settings.city].filter(Boolean).join(' '),settings.country].filter(Boolean).join(' — '));
+  // Riga 3 (bold): P.IVA
+  const vatLine=settings.vat?'P.IVA '+UP(settings.vat):'';
+  // Riga 4: Email · Telefono (minuscoli)
+  const contactLine=[settings.email,settings.phone].filter(Boolean).join(' · ');
+  if(companyName){sf('bold',8,15,23,42);doc.text(companyName,ml,y);y+=3.6;}
   sf('normal',7,100,116,139);
-  if(line2){doc.text(line2,ml,y);y+=3.2;}
-  if(line3){doc.text(line3,ml,y);y+=3.2;}
+  if(addrLine){doc.text(addrLine,ml,y);y+=3.2;}
+  if(vatLine){sf('bold',7,15,23,42);doc.text(vatLine,ml,y);y+=3.2;}
+  sf('normal',7,100,116,139);
+  if(contactLine){doc.text(contactLine,ml,y);y+=3.2;}
   y=Math.max(y,badgeY+12)+3;
   doc.setDrawColor(220,225,235);doc.setLineWidth(0.25);doc.line(ml,y,PW-mr,y);y+=4;
 
-  // CLIENTE + VEICOLO — in MAIUSCOLO (email e telefono resta com'è)
+  // CLIENTE + VEICOLO — in MAIUSCOLO (email e telefono resta com'è, in fondo)
   const bw=(cw-4)/2,rh=4.2;
   const cli=clients.find(c=>c.name===p.customerName);
   const cliRows=[];
   if(p.customerName)cliRows.push({bold:true,val:UP(p.customerName)});
-  if(cli){if(cli.company&&cli.company!==cli.name)cliRows.push({val:UP(cli.company)});if(cli.contact)cliRows.push({val:UP(cli.contact)});if(cli.phone)cliRows.push({val:cli.phone});if(cli.email)cliRows.push({val:cli.email});if(cli.addr)cliRows.push({val:UP(cli.addr)});const loc=UP([cli.cap,cli.city,cli.country].filter(Boolean).join(' ')); if(loc)cliRows.push({val:loc});if(cli.vat)cliRows.push({val:'VAT: '+UP(cli.vat)});}
+  if(cli){
+    if(cli.company&&cli.company!==cli.name)cliRows.push({val:UP(cli.company)});
+    if(cli.contact)cliRows.push({val:UP(cli.contact)});
+    if(cli.addr)cliRows.push({val:UP(cli.addr)});
+    const loc=UP([cli.cap,cli.city,cli.country].filter(Boolean).join(' '));
+    if(loc)cliRows.push({val:loc});
+    if(cli.vat)cliRows.push({val:'VAT: '+UP(cli.vat)});
+    // contatti come ULTIMI elementi
+    if(cli.phone)cliRows.push({val:cli.phone});
+    if(cli.email)cliRows.push({val:cli.email});
+  }
   const vrows=[[t.brand,UP(p.vehicleBrand)||'-'],[t.model,UP(p.vehicleModel)||'-']];
   if(p.plate)vrows.push([t.plate,UP(p.plate)]);if(p.vin)vrows.push([t.vin,UP(p.vin)]);if(p.color)vrows.push([t.color,UP(txC(p.color))]);
   if(p.pricingType==='assicurativo'){if(p.insurance)vrows.push([t.pdfInsurance||'Assicurazione',UP(p.insurance)]);}
@@ -1030,7 +1044,8 @@ function downloadPdf(p){
   const cd=p.calcDetail;
   const totRows=[];
   if(p.manualOverride){
-    // Prezzo concordato: niente breakdown, solo totale finale
+    // Prezzo concordato: niente importi parziali, MA mostro comunque il numero di bolli come info tecnica
+    if(cd&&cd.bolli)totRows.push([cd.bolli+' '+(t.pdfBolliWord||'bolli'),'']);
   } else if(cd){if(cd.matWithCoeff)totRows.push([cd.bolli+' '+(t.pdfBolliWord||'bolli'),money(cd.matWithCoeff)]);if(cd.cpTotal>0)totRows.push(['CP',money(cd.cpTotal)]);if(cd.degPrice>0)totRows.push([degLbl,money(cd.degPrice)]);}
   else if(p.pricingType==='forfait')totRows.push(['Forfait',money(p.totalAmount)]);
   totRows.push(['__TOTAL__',money(p.totalAmount)]);
