@@ -14,6 +14,8 @@
 <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png"/>
 <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png"/>
 <link rel="manifest" href="manifest.json"/>
+<meta name="app-version" content="3.0.1"/>
+<meta name="app-build" content="2026-05-16-A"/>
 <title>PDRStudio</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -446,6 +448,7 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--sf2)}tr.sel t
         <button class="btn primary" id="btn-saveset">Salva impostazioni</button>
         <button class="btn danger sm" id="btn-clearall">Cancella tutto</button>
       </div>
+      <div id="app-version-info" style="text-align:center;color:var(--mu);font-size:10px;margin-top:20px;opacity:.6;user-select:text">PDRStudio · v<span id="ver-num"></span> · build <span id="ver-build"></span></div>
     </section>
   </div>
   <nav class="bnav" id="bnav">
@@ -458,6 +461,11 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--sf2)}tr.sel t
 </div>
 <div id="toast"></div>
 <script>
+/* ═══════════════ VERSIONE ═══════════════ */
+const APP_VERSION='3.0.1';
+const APP_BUILD='2026-05-16-A';
+console.log('%c PDRStudio %cv'+APP_VERSION+' · build '+APP_BUILD,'background:#4F63FF;color:white;padding:2px 6px;border-radius:3px;font-weight:bold','color:#666;margin-left:4px');
+
 /* ═══════════════ SUPABASE CONFIG ═══════════════ */
 const SUPABASE_URL='https://mtqsyftaaisyljfjujiv.supabase.co';
 const SUPABASE_KEY='sb_publishable_TLoZ-4grN2NCRPQp7dNQww_I4wONF5z';
@@ -1640,6 +1648,9 @@ window.addEventListener('offline',()=>setSyncStatus('err','offline'));
 
 /* ═══════════════ INIT ═══════════════ */
 async function init(){
+  // versione visibile
+  const vn=document.getElementById('ver-num');if(vn)vn.textContent=APP_VERSION;
+  const vb=document.getElementById('ver-build');if(vb)vb.textContent=APP_BUILD;
   // listeners base auth screen
   document.getElementById('tab-login').addEventListener('click',()=>setAuthMode('login'));
   document.getElementById('tab-signup').addEventListener('click',()=>setAuthMode('signup'));
