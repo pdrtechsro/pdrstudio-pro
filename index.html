@@ -1020,12 +1020,18 @@ function downloadPdf(p){
   } else if(cd){if(cd.matWithCoeff)totRows.push([cd.bolli+' '+(t.pdfBolliWord||'bolli'),money(cd.matWithCoeff)]);if(cd.cpTotal>0)totRows.push(['CP',money(cd.cpTotal)]);if(cd.degPrice>0)totRows.push([degLbl,money(cd.degPrice)]);}
   else if(p.pricingType==='forfait')totRows.push(['Forfait',money(p.totalAmount)]);
   totRows.push(['__TOTAL__',money(p.totalAmount)]);
-  const tbw=72,tbh=totRows.length*5.5+5;
-  doc.setFillColor(248,250,252);doc.setDrawColor(220,225,235);doc.setLineWidth(0.25);doc.roundedRect(PW-mr-tbw,y,tbw,tbh,2,2,'FD');
+  const tbw=72;
   const hasBreakdown=totRows.length>1;
+  // altezza box: per ogni riga breakdown 5.5mm, +5mm padding, +respiro extra prima del totale (4mm) se breakdown
+  const tbh=totRows.length*5.5+5+(hasBreakdown?4:0);
+  doc.setFillColor(248,250,252);doc.setDrawColor(220,225,235);doc.setLineWidth(0.25);doc.roundedRect(PW-mr-tbw,y,tbw,tbh,2,2,'FD');
   let ty=y+5;
   totRows.forEach(([lb,vl])=>{
-    if(lb==='__TOTAL__'){if(hasBreakdown){doc.setDrawColor(200,210,225);doc.setLineWidth(0.2);doc.line(PW-mr-tbw+3,ty-2,PW-mr-3,ty-2);}sf('bold',10,79,99,255);doc.text(t.pdfTotal,PW-mr-tbw+3,ty+1);doc.text(vl,PW-mr-3,ty+1,{align:'right'});}
+    if(lb==='__TOTAL__'){
+      // respiro extra prima della linea separatrice
+      if(hasBreakdown){ty+=2.5;doc.setDrawColor(200,210,225);doc.setLineWidth(0.2);doc.line(PW-mr-tbw+3,ty-2,PW-mr-3,ty-2);ty+=2.5;}
+      sf('bold',10,79,99,255);doc.text(t.pdfTotal,PW-mr-tbw+3,ty+1);doc.text(vl,PW-mr-3,ty+1,{align:'right'});
+    }
     else{sf('normal',7.5,100,116,139);doc.text(lb,PW-mr-tbw+3,ty);sf('bold',7.5,15,23,42);doc.text(vl,PW-mr-3,ty,{align:'right'});}
     ty+=5.5;
   });
