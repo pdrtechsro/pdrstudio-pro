@@ -14,8 +14,8 @@
 <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png"/>
 <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png"/>
 <link rel="manifest" href="manifest.json"/>
-<meta name="app-version" content="3.0.1"/>
-<meta name="app-build" content="2026-05-16-A"/>
+<meta name="app-version" content="3.1.0"/>
+<meta name="app-build" content="2026-05-16-B"/>
 <title>PDRStudio</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -122,6 +122,7 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--sf2)}tr.sel t
 .sum-detail{font-size:11px;color:var(--mu);margin-top:2px}
 .btn-recalc{display:inline-flex;align-items:center;gap:4px;background:transparent;border:1px solid var(--bd);color:var(--mu);font-size:11px;font-weight:500;padding:4px 8px;border-radius:6px;cursor:pointer;transition:.15s;margin-left:8px;vertical-align:middle}
 .btn-recalc:hover{background:var(--pl);border-color:var(--pr);color:var(--pr)}
+.forced-badge{display:inline-flex;align-items:center;gap:4px;background:var(--dl);border:1px solid var(--dg);color:var(--dg);font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;margin-left:8px;vertical-align:middle}
 .sum-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
 .sum-row{display:flex;align-items:center}
 .detail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
@@ -273,17 +274,47 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--sf2)}tr.sel t
         <div id="assic-block" class="card">
           <div class="card-title" id="ttl-panels">Pannelli — bolli e lavorazione</div>
           <div class="card-sub" id="sub-panels">Pannelli preimpostati su DSP. Modifica solo se serve DAP, CP o ALU.</div>
+          <div class="coeff-bar" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--sf2);border-radius:8px;margin-bottom:12px;flex-wrap:wrap">
+            <span style="font-size:12px;color:var(--mu);font-weight:600">Coefficiente</span>
+            <input type="number" id="pcoeff-input" min="0.25" max="2.50" step="0.05" value="1.00" style="width:80px;padding:6px 8px;border:1px solid var(--bd);background:var(--sf);border-radius:6px;text-align:center;font-weight:600">
+            <span style="font-size:11px;color:var(--mu)">× matrice bolli (no smontaggio)</span>
+          </div>
           <div id="panel-list"></div>
+          <div class="card" style="background:var(--sf2);border:1px dashed var(--bd);padding:12px;margin-top:8px;border-radius:8px">
+            <div style="font-size:11px;color:var(--mu);font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em">+ Pannello personalizzato (opzionale)</div>
+            <div style="display:grid;grid-template-columns:2fr 80px 80px;gap:8px;align-items:end">
+              <div>
+                <label style="font-size:10px;color:var(--mu);display:block;margin-bottom:3px">Nome pannello</label>
+                <input id="custom-name" placeholder="es. Sportello carburante" style="width:100%;padding:6px 8px;border:1px solid var(--bd);background:var(--sf);border-radius:6px">
+              </div>
+              <div>
+                <label style="font-size:10px;color:var(--mu);display:block;margin-bottom:3px">Bolli</label>
+                <input id="custom-bolli" type="number" min="0" step="1" placeholder="0" style="width:100%;padding:6px 8px;border:1px solid var(--bd);background:var(--sf);border-radius:6px;text-align:center">
+              </div>
+              <div>
+                <label style="font-size:10px;color:var(--mu);display:block;margin-bottom:3px">Tipo</label>
+                <select id="custom-type" style="width:100%;padding:6px 8px;border:1px solid var(--bd);background:var(--sf);border-radius:6px">
+                  <option value="DSP">DSP</option>
+                  <option value="DAP">DAP</option>
+                  <option value="CP">CP</option>
+                  <option value="ALU">ALU</option>
+                </select>
+              </div>
+            </div>
+            <div id="custom-cp-row" style="display:none;margin-top:8px">
+              <label style="font-size:10px;color:var(--mu);display:block;margin-bottom:3px">Prezzo CP (€)</label>
+              <input id="custom-cp-price" type="number" min="0" step="1" placeholder="0" style="width:120px;padding:6px 8px;border:1px solid var(--bd);background:var(--sf);border-radius:6px;text-align:center">
+            </div>
+          </div>
           <div class="sum-bar">
             <div>
               <div class="sum-label" id="lbl-total">Totale preventivo (IVA esclusa)</div>
-              <div class="sum-row"><div class="sum-val editable" id="quote-total" title="Clicca per forzare manualmente il prezzo">€ 0,00</div><button class="btn-recalc hidden" id="btn-recalc" title="Torna al prezzo calcolato">↺ Ricalcola</button></div>
+              <div class="sum-row"><div class="sum-val editable" id="quote-total" title="Clicca per forzare manualmente il prezzo">€ 0,00</div><span id="forced-badge" class="forced-badge hidden">⚠ prezzo forzato</span><button class="btn-recalc hidden" id="btn-recalc" title="Torna al prezzo calcolato">↺ Ricalcola</button></div>
               <div class="sum-detail" id="sum-detail">0 bolli</div>
             </div>
             <div class="btn-row" style="margin:0">
               <button class="btn primary" id="btn-save">Salva pratica</button>
               <button class="btn" id="btn-pdf">Scarica PDF</button>
-              <button class="btn" id="btn-email">Invia email</button>
               <button class="btn danger" id="btn-reset">Reset</button>
             </div>
           </div>
@@ -299,7 +330,6 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--sf2)}tr.sel t
             <div class="btn-row" style="margin:0">
               <button class="btn primary" id="btn-save2">Salva pratica</button>
               <button class="btn" id="btn-pdf2">Scarica PDF</button>
-              <button class="btn" id="btn-email2">Invia email</button>
               <button class="btn danger" id="btn-reset2">Reset</button>
             </div>
           </div>
@@ -390,20 +420,6 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--sf2)}tr.sel t
         </div>
       </div>
       <div class="card">
-        <div class="card-title" id="ttl-coeff">Coefficiente moltiplicatore</div>
-        <div class="card-sub" id="sub-coeff">Moltiplica il prezzo matrice. Lo smontaggio NON viene moltiplicato.</div>
-        <div class="coeff-wrap">
-          <span style="font-size:12px;color:var(--mu)">×0.25</span>
-          <input type="range" id="coeff-slider" min="0.25" max="2.50" step="0.05" value="1.00">
-          <span style="font-size:12px;color:var(--mu)">×2.50</span>
-          <div class="coeff-val" id="coeff-display">×1.00</div>
-        </div>
-        <div style="margin-top:8px;font-size:12px;color:var(--mu)">
-          <span id="lbl-scoeffdirect">Valore diretto:</span>
-          <input type="number" id="coeff-input" min="0.25" max="2.50" step="0.05" value="1.00" style="width:80px;padding:5px 8px;border:1px solid var(--bd);background:var(--sf2);border-radius:8px;text-align:center;margin-left:6px">
-        </div>
-      </div>
-      <div class="card">
         <div class="card-title" id="ttl-tariff">Tariffario matrice bolli</div>
         <div class="card-sub" id="sub-tariff">DSP e DAP hanno lo stesso prezzo. ALU cofano anteriore usa "Con cofano ALU".</div>
         <div style="overflow-x:auto"><table class="tariff-table"><thead><tr>
@@ -462,8 +478,8 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--sf2)}tr.sel t
 <div id="toast"></div>
 <script>
 /* ═══════════════ VERSIONE ═══════════════ */
-const APP_VERSION='3.0.1';
-const APP_BUILD='2026-05-16-A';
+const APP_VERSION='3.1.0';
+const APP_BUILD='2026-05-16-B';
 console.log('%c PDRStudio %cv'+APP_VERSION+' · build '+APP_BUILD,'background:#4F63FF;color:white;padding:2px 6px;border-radius:3px;font-weight:bold','color:#666;margin-left:4px');
 
 /* ═══════════════ SUPABASE CONFIG ═══════════════ */
@@ -483,11 +499,12 @@ function setSyncStatus(mode,label){
 }
 
 /* ═══════════════ DATI STATICI ═══════════════ */
-const PANELS=['Cofano anteriore','Parafango ant. DX','Portiera ant. DX','Portiera post. DX','Parafango post. DX','Baule','Parafango post. SX','Portiera post. SX','Portiera ant. SX','Parafango ant. SX','Tetto','Montante DX','Montante SX'];
+const PANELS=['Cofano anteriore','Tetto','Baule','Spoiler baule','Parafango ant. DX','Portiera ant. DX','Portiera post. DX','Parafango post. DX','Montante DX','Parafango ant. SX','Portiera ant. SX','Portiera post. SX','Parafango post. SX','Montante SX'];
 const COFANO_ANT='Cofano anteriore';
 const DEFAULT_MATRIX=[['0–15',110,110,110],['16–25',260,260,260],['26–50',520,520,570],['51–75',670,750,800],['76–100',825,925,975],['101–125',970,1070,1120],['126–150',1110,1210,1260],['151–175',1275,1370,1420],['176–200',1440,1530,1580],['201–225',1590,1650,1700],['226–250',1740,1760,1810],['251–275',1820,1880,1930],['276–300',1900,2000,2050]];
 const MATRIX_MAX=[15,25,50,75,100,125,150,175,200,225,250,275,300];
 const DEFAULT_DEG={A:90,B:145,C:200};
+const DEFAULT_SETTINGS={company:'',tech:'',email:'',phone:'',vat:'',addr:'',cap:'',city:'',country:'',footer:'',uiLang:'IT',pdfLang:'IT',theme:'dark',coeff:1};
 const COLORS=['Bianco','Nero','Grigio','Argento','Rosso','Blu','Verde','Beige','Marrone','Arancio','Giallo','Viola','Oro','Bronzo','Azzurro'];
 const INSURANCES=['Generali','Allianz','UnipolSai','Zurich','AXA','Reale Mutua','Cattolica','Genertel','Linear','Direct Line','Verti','ConTe.it','Quixa','Genialloyd','Vittoria Assicurazioni','ITAS','Groupama','HDI','Helvetia','Sara Assicurazioni','Tua Assicurazioni','Europ Assistance','Admiral','Prima.it','MAAF','MACIF','MAIF','GMF','Matmut','Crédit Agricole','Pacifica','BPCE','La Banque Postale','Aviva France','SwissLife','April','HUK-Coburg','DEVK','Ergo','LVM','VHV','R+V','AOK','Württembergische','Generali Deutschland','Mapfre','Mutua Madrileña','Línea Directa','Mutuactivos','Pelayo','Reale Seguros','Caser','Catalana Occidente','Santalucía','ASISA','Sanitas','Helvetia Seguros'];
 const VEHICLES={'Alfa Romeo':['147','156','159','166','Giulia','Giulietta','MiTo','Stelvio','Tonale'],'Audi':['A1','A3','A4','A5','A6','A7','A8','Q2','Q3','Q5','Q7','Q8','TT','RS3','RS4','RS5','RS6','e-tron'],'BMW':['Serie 1','Serie 2','Serie 3','Serie 4','Serie 5','Serie 7','X1','X2','X3','X4','X5','X6','X7','iX','i4','M3','M4','M5','Z4'],'Citroen':['C1','C3','C3 Aircross','C4','C5 Aircross','Berlingo'],'Dacia':['Duster','Jogger','Logan','Sandero','Spring'],'Ferrari':['296 GTB','488','812','F8','Portofino','Roma','SF90','Purosangue'],'Fiat':['500','500e','500L','500X','Doblo','Ducato','Panda','Punto','Tipo'],'Ford':['Fiesta','Focus','Galaxy','Kuga','Mondeo','Mustang','Puma','Ranger','Transit'],'Honda':['Civic','CR-V','HR-V','Jazz'],'Hyundai':['i10','i20','i30','Kona','Santa Fe','Tucson','Ioniq 5','Ioniq 6'],'Jaguar':['E-Pace','F-Pace','F-Type','I-Pace','XE','XF'],'Jeep':['Avenger','Cherokee','Compass','Grand Cherokee','Renegade','Wrangler'],'Kia':['Ceed','EV6','Niro','Picanto','Sorento','Sportage','XCeed'],'Land Rover':['Defender','Discovery','Range Rover','Range Rover Evoque','Range Rover Sport'],'Maserati':['Ghibli','GranTurismo','Levante','MC20','Quattroporte'],'Mazda':['2','3','6','CX-3','CX-30','CX-5','CX-60','MX-5'],'Mercedes-Benz':['A 180','A 200','B 180','C 200','C 220','CLA','CLS','E 200','E 220','G 63 AMG','GLA','GLB','GLC','GLE','GLS','SL','Sprinter','EQA','EQC','EQS'],'Mini':['Cooper','Countryman','Clubman','3 porte','5 porte'],'Nissan':['Ariya','Juke','Leaf','Micra','Qashqai','X-Trail'],'Opel':['Astra','Corsa','Grandland','Insignia','Mokka'],'Peugeot':['208','2008','308','3008','408','508','5008'],'Porsche':['718 Boxster','718 Cayman','911','Cayenne','Macan','Panamera','Taycan'],'Renault':['Captur','Clio','Kadjar','Megane','Scenic','Zoe','Austral'],'Seat':['Arona','Ateca','Ibiza','Leon','Tarraco'],'Skoda':['Enyaq','Fabia','Kamiq','Karoq','Kodiaq','Octavia','Superb'],'Suzuki':['Ignis','Jimny','S-Cross','Swift','Vitara'],'Tesla':['Model 3','Model S','Model X','Model Y','Cybertruck'],'Toyota':['Aygo','C-HR','Corolla','Hilux','Land Cruiser','Prius','RAV4','Yaris','bZ4X'],'Volkswagen':['Golf','ID.3','ID.4','ID.5','ID.7','Passat','Polo','T-Cross','T-Roc','Tiguan','Touareg','Transporter'],'Volvo':['C40','S60','S90','V60','V90','XC40','XC60','XC90']};
@@ -570,8 +587,6 @@ function applyI18n(){
   s('lbl-total',t.totalLbl);
   g('btn-save').textContent=t.save;g('btn-pdf').textContent=t.pdfBtn;g('btn-reset').textContent=t.resetBtn;
   g('btn-save2').textContent=t.save;g('btn-pdf2').textContent=t.pdfBtn;g('btn-reset2').textContent=t.resetBtn;
-  const be1=g('btn-email');if(be1)be1.textContent=t.emailBtn||'Invia email';
-  const be2=g('btn-email2');if(be2)be2.textContent=t.emailBtn||'Invia email';
   s('ttl-forfait',t.forfaitTitle);s('lbl-famount',t.famount);s('lbl-fref',t.fref);s('lbl-ftotal',t.ftotal);
   s('edit-notice',t.editNotice);
   s('ttl-vehicles',t.vehicles);s('lbl-fsearch',t.search);s('lbl-ftype',t.ftype);s('lbl-frep',t.frep);s('lbl-fbill',t.fbill);
@@ -585,7 +600,6 @@ function applyI18n(){
   s('lbl-cco',t.cco);s('lbl-ccontact',t.ccontact);s('lbl-cphone2',t.cphone2);s('lbl-cemail2',t.cemail2);s('lbl-cvat',t.cvat);s('lbl-caddr',t.caddr);s('lbl-ccity2',t.ccity2);s('lbl-ccountry2',t.ccountry2);s('lbl-cnotes2',t.cnotes2);
   g('btn-savecli').textContent=t.saveCli;s('ttl-clientbook',t.clientbook);
   s('ttl-company',t.companyData);s('lbl-scompany',t.scompany);s('lbl-stech',t.stech);s('lbl-sphone',t.sphone);s('lbl-svat',t.svat);s('lbl-saddr',t.saddr);s('lbl-scap',t.ccap||'CAP');s('lbl-scity',t.scity);s('lbl-scountry',t.scountry);s('lbl-sfooter',t.sfooter);
-  s('ttl-coeff',t.coeffTitle);s('sub-coeff',t.coeffSub);s('lbl-scoeffdirect',t.coeffDirect);
   s('ttl-tariff',t.tariffTitle);s('sub-tariff',t.tariffSub);
   s('th-bollirange',t.bolliRange);s('th-sans',t.sans);s('th-avec',t.avec);s('th-alu',t.aluCol);
   s('ttl-deg2',t.deg2);s('sub-deg2',t.deg2sub);s('lbl-degA',t.degASet);s('lbl-degB',t.degBSet);s('lbl-degC',t.degCSet);
@@ -630,17 +644,29 @@ g('theme-btn').addEventListener('click',()=>applyTheme(document.documentElement.
 /* ═══════════════ MATRICE ═══════════════ */
 function totalBolli(){return PANELS.reduce((s,n)=>{const p=PS[n];return(!p||p.cp)?s:s+(+p.bolli||0);},0);}
 function matCol(){const c=PS[COFANO_ANT];if(!c||c.cp)return 0;if(!(+c.bolli>0)&&!c.dsp&&!c.dap)return 0;return c.alu?2:1;}
+function getCurrentCoeff(){
+  const v=parseFloat(gv('pcoeff-input'));
+  if(isNaN(v))return 1;
+  return Math.min(2.5,Math.max(0.25,v));
+}
 function calcAll(){
-  const coeff=+settings.coeff||1;
-  const b=totalBolli();
+  const coeff=getCurrentCoeff();
+  const cp=getCustomPanel();
+  // bolli totali includono anche il custom
+  let b=totalBolli();
+  if(cp&&(cp.type==='DSP'||cp.type==='DAP'||cp.type==='ALU'))b+=cp.bolli;
   const ri=b===0?-1:MATRIX_MAX.findIndex(m=>b<=m);
   const row=ri===-1?(b===0?0:MATRIX_MAX.length-1):ri;
   const matPrice=b===0?0:matrix[row][matCol()+1];
   const matWithCoeff=Math.round(matPrice*coeff*100)/100;
-  const cpTotal=PANELS.reduce((s,n)=>{const p=PS[n];return(!p||!p.cp)?s:s+(+p.cpPrice||0);},0);
+  let cpTotal=PANELS.reduce((s,n)=>{const p=PS[n];return(!p||!p.cp)?s:s+(+p.cpPrice||0);},0);
+  if(cp&&cp.type==='CP')cpTotal+=cp.cpPrice;
   const degPrice=degCat==='none'?0:(+deg[degCat]||0);
   const cols=[T('colSans'),T('colAvec'),T('colAlu')];
-  return{matPrice,matWithCoeff,cpTotal,degPrice,bolli:b,coeff,col:cols[matCol()],total:matWithCoeff+cpTotal+degPrice};
+  let total=matWithCoeff+cpTotal+degPrice;
+  // arrotondamento al 5€ superiore (solo del totale finale calcolato)
+  const rounded=Math.ceil(total/5)*5;
+  return{matPrice,matWithCoeff,cpTotal,degPrice,bolli:b,coeff,col:cols[matCol()],total:rounded,rawTotal:total,custom:cp};
 }
 function refreshTotal(){
   const r=calcAll();
@@ -648,9 +674,11 @@ function refreshTotal(){
   const finalTotal=useManual?manualTotal:r.total;
   if(g('quote-total'))g('quote-total').textContent=money(finalTotal);
   const btnR=g('btn-recalc');if(btnR)btnR.classList.toggle('hidden',!useManual);
+  const fb=g('forced-badge');if(fb)fb.classList.toggle('hidden',!useManual);
   if(g('sum-detail')){
     const parts=[r.bolli+' bolli',r.col];
     if(r.cpTotal>0)parts.push('CP '+money(r.cpTotal));
+    // smontaggio SEMPRE visibile se c'è (anche con prezzo forzato)
     if(r.degPrice>0)parts.push(T('dismantling')+' '+money(r.degPrice));
     g('sum-detail').textContent=parts.join(' · ');
   }
@@ -790,6 +818,16 @@ function fillFrom(pr){
   if(g('inp-ins'))g('inp-ins').value=pr.insurance||'';
   g('inp-date').value=pr.quoteDate||today();g('inp-rdate').value=pr.repairDate||'';
   if(g('inp-pcamp'))g('inp-pcamp').value=pr.campaignId||'';
+  if(g('pcoeff-input'))g('pcoeff-input').value=(+pr.coeff||1).toFixed(2);
+  // ripristino custom panel
+  if(g('custom-name')){
+    const cp=pr.customPanel||null;
+    g('custom-name').value=cp?cp.name||'':'';
+    g('custom-bolli').value=cp?cp.bolli||0:'';
+    g('custom-type').value=cp?cp.type||'DSP':'DSP';
+    g('custom-cp-price').value=cp?cp.cpPrice||0:'';
+    updCustomUI();
+  }
   setMode(pr.pricingType||'assicurativo');
   if(pr.pricingType==='forfait'){g('inp-famount').value=pr.totalAmount||0;g('inp-fref').value=pr.forfaitRef||'';if(g('forfait-total'))g('forfait-total').textContent=money(pr.totalAmount||0);}
   initPS();if(pr.panels){PS=JSON.parse(JSON.stringify(pr.panels));ensurePS();}
@@ -798,6 +836,12 @@ function fillFrom(pr){
 function clearForm(){
   ['inp-cust','inp-brand','inp-model','inp-color','inp-notes','inp-famount','inp-fref','inp-rdate','inp-ins'].forEach(id=>{if(g(id))g(id).value='';});
   if(g('inp-pcamp'))g('inp-pcamp').value='';
+  if(g('pcoeff-input'))g('pcoeff-input').value='1.00';
+  if(g('custom-name'))g('custom-name').value='';
+  if(g('custom-bolli'))g('custom-bolli').value='';
+  if(g('custom-type'))g('custom-type').value='DSP';
+  if(g('custom-cp-price'))g('custom-cp-price').value='';
+  const _ccpr=g('custom-cp-row');if(_ccpr)_ccpr.style.display='none';
   g('inp-date').value=today();initPS();degCat='none';manualTotal=null;renderPanels();renderDegBtns();
 }
 function doReset(){
@@ -836,10 +880,10 @@ function doSave(){
   if(insName)rememberInsurance(insName);
   const useManual=(curMode==='assicurativo'&&manualTotal!==null&&!isNaN(manualTotal));
   const finalTotal=useManual?manualTotal:r.total;
-  const base={id:editId||uid(),createdAt:existing?existing.createdAt:now(),updatedAt:now(),quoteDate:gv('inp-date'),repairDate:gv('inp-rdate')||'',customerName:gv('inp-cust').trim(),insurance:insName,vehicleBrand:gv('inp-brand').trim(),vehicleModel:gv('inp-model').trim(),plate,vin,color:gv('inp-color').trim(),notes:gv('inp-notes').trim(),repairStatus:existing?existing.repairStatus:'Creata',billingStatus:existing?existing.billingStatus:'',pricingType:curMode,degCat,coeff:settings.coeff,campaignId:campId};
+  const base={id:editId||uid(),createdAt:existing?existing.createdAt:now(),updatedAt:now(),quoteDate:gv('inp-date'),repairDate:gv('inp-rdate')||'',customerName:gv('inp-cust').trim(),insurance:insName,vehicleBrand:gv('inp-brand').trim(),vehicleModel:gv('inp-model').trim(),plate,vin,color:gv('inp-color').trim(),notes:gv('inp-notes').trim(),repairStatus:existing?existing.repairStatus:'Creata',billingStatus:existing?existing.billingStatus:'',pricingType:curMode,degCat,coeff:getCurrentCoeff(),campaignId:campId};
   const pr=curMode==='forfait'
-    ?{...base,totalAmount:+gv('inp-famount')||0,forfaitRef:gv('inp-fref').trim(),panels:null,calcDetail:null,manualOverride:false}
-    :{...base,totalAmount:finalTotal,forfaitRef:'',panels:JSON.parse(JSON.stringify(PS)),calcDetail:{matPrice:r.matPrice,matWithCoeff:r.matWithCoeff,cpTotal:r.cpTotal,degPrice:r.degPrice,bolli:r.bolli,col:r.col,coeff:r.coeff,calcTotal:r.total},manualOverride:useManual};
+    ?{...base,totalAmount:+gv('inp-famount')||0,forfaitRef:gv('inp-fref').trim(),panels:null,customPanel:null,calcDetail:null,manualOverride:false}
+    :{...base,totalAmount:finalTotal,forfaitRef:'',panels:JSON.parse(JSON.stringify(PS)),customPanel:getCustomPanel(),calcDetail:{matPrice:r.matPrice,matWithCoeff:r.matWithCoeff,cpTotal:r.cpTotal,degPrice:r.degPrice,bolli:r.bolli,col:r.col,coeff:r.coeff,calcTotal:r.total,custom:r.custom},manualOverride:useManual};
   if(editId)practices=practices.filter(p=>p.id!==editId);
   practices.unshift(pr);save();cloudUpsertPractice(pr);editId=null;doReset();renderTable();toast(T('savedOk'));
 }
@@ -855,69 +899,11 @@ function doPdf(){
   if(insName)rememberInsurance(insName);
   const useManual=(curMode==='assicurativo'&&manualTotal!==null&&!isNaN(manualTotal));
   const finalTotal=useManual?manualTotal:r.total;
-  const fake={id:uid(),createdAt:now(),quoteDate:gv('inp-date')||today(),customerName:gv('inp-cust').trim(),insurance:insName,vehicleBrand:brand,vehicleModel:model,plate:gv('inp-plate').trim(),vin:gv('inp-vin').trim(),color:gv('inp-color').trim(),notes:gv('inp-notes').trim(),pricingType:curMode,totalAmount:curMode==='forfait'?(+gv('inp-famount')||0):finalTotal,forfaitRef:curMode==='forfait'?gv('inp-fref').trim():'',panels:curMode==='assicurativo'?JSON.parse(JSON.stringify(PS)):null,degCat,calcDetail:{...r,calcTotal:r.total},manualOverride:useManual};
+  const fake={id:uid(),createdAt:now(),quoteDate:gv('inp-date')||today(),customerName:gv('inp-cust').trim(),insurance:insName,vehicleBrand:brand,vehicleModel:model,plate:gv('inp-plate').trim(),vin:gv('inp-vin').trim(),color:gv('inp-color').trim(),notes:gv('inp-notes').trim(),pricingType:curMode,totalAmount:curMode==='forfait'?(+gv('inp-famount')||0):finalTotal,forfaitRef:curMode==='forfait'?gv('inp-fref').trim():'',panels:curMode==='assicurativo'?JSON.parse(JSON.stringify(PS)):null,customPanel:curMode==='assicurativo'?getCustomPanel():null,degCat,calcDetail:{...r,calcTotal:r.total},manualOverride:useManual};
   downloadPdf(fake);
 }
 g('btn-pdf').addEventListener('click',doPdf);
 g('btn-pdf2').addEventListener('click',doPdf);
-
-// Cerca email cliente nella rubrica dal nome
-function findClientEmail(name){
-  if(!name)return '';
-  const n=name.trim().toLowerCase();if(!n)return '';
-  const c=clients.find(x=>(x.name||'').toLowerCase()===n||(x.company||'').toLowerCase()===n);
-  return c?c.email||'':'';
-}
-
-// Genera mailto da una pratica (anche non salvata)
-function sendQuoteEmail(p){
-  // Caso 1: chiamata da detail (pratica completa) → usa direttamente p
-  // Caso 2: chiamata dal form preventivo → prendo dati live dal form
-  let practiceData=p;
-  if(!practiceData){
-    const brand=gv('inp-brand').trim(),model=gv('inp-model').trim();
-    if(!brand||!model){toast(T('errReq'));return;}
-    const r=calcAll();
-    const insName=(curMode==='assicurativo')?gv('inp-ins').trim():'';
-    const useManual=(curMode==='assicurativo'&&manualTotal!==null&&!isNaN(manualTotal));
-    const finalTotal=useManual?manualTotal:r.total;
-    practiceData={customerName:gv('inp-cust').trim(),insurance:insName,vehicleBrand:brand,vehicleModel:model,plate:gv('inp-plate').trim(),vin:gv('inp-vin').trim(),color:gv('inp-color').trim(),notes:gv('inp-notes').trim(),pricingType:curMode,totalAmount:curMode==='forfait'?(+gv('inp-famount')||0):finalTotal,quoteDate:gv('inp-date')||today()};
-  }
-  // recupero email cliente
-  const cliEmail=findClientEmail(practiceData.customerName);
-  // costruisco subject + body
-  const company=settings.company||'';
-  const veh=[practiceData.vehicleBrand,practiceData.vehicleModel].filter(Boolean).join(' ');
-  const plate=practiceData.plate||practiceData.vin||'';
-  const total=money(practiceData.totalAmount||0);
-  const subject=`Preventivo ${veh}${plate?' ('+plate+')':''} - ${company||'PDRStudio'}`;
-  const greet=practiceData.customerName?'Gentile '+practiceData.customerName+',':'Buongiorno,';
-  const lines=[
-    greet,'',
-    'in allegato (da scaricare separatamente) trova il preventivo di riparazione per il veicolo:',
-    veh+(plate?' - targa '+plate:''),'',
-    'Importo totale: '+total+' (IVA esclusa)','',
-    'Cordiali saluti,',
-    settings.tech||company||'PDRStudio',
-    settings.phone?'Tel: '+settings.phone:'',
-    settings.email||''
-  ].filter(Boolean);
-  const body=lines.join('\r\n');
-  // mailto link
-  const ml='mailto:'+encodeURIComponent(cliEmail)+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
-  // se non c'è email nel cliente avviso ma apro comunque mailto (utente può scriverla)
-  if(!cliEmail&&practiceData.customerName){
-    toast('Nessuna email salvata per "'+practiceData.customerName+'" — aggiungila in Clienti per compilarla automaticamente.');
-  }
-  // apro client email + scarico PDF in parallelo
-  if(p)downloadPdf(p); // se ho la pratica completa scarico subito il PDF da allegare manualmente
-  else doPdf(); // dal form preventivo
-  setTimeout(()=>{window.location.href=ml;},400);
-}
-
-// listener bottoni email dal form preventivo
-const _be1=g('btn-email');if(_be1)_be1.addEventListener('click',()=>sendQuoteEmail());
-const _be2=g('btn-email2');if(_be2)_be2.addEventListener('click',()=>sendQuoteEmail());
 
 function downloadPdf(p){
   if(!window.jspdf||!window.jspdf.jsPDF){toast('jsPDF non caricato — connettiti a internet e ricarica.');return;}
@@ -927,7 +913,7 @@ function downloadPdf(p){
   const doc=new jsPDF({unit:'mm',format:'a4',orientation:'portrait'});
   const PW=210,PH=297,ml=12,mr=12,cw=PW-ml-mr;
   let y=12;
-  const PNAMES={IT:{'Cofano anteriore':'Cofano ant.','Parafango ant. DX':'Par. ant. DX','Portiera ant. DX':'P. ant. DX','Portiera post. DX':'P. post. DX','Parafango post. DX':'Par. post. DX','Baule':'Baule','Parafango post. SX':'Par. post. SX','Portiera post. SX':'P. post. SX','Portiera ant. SX':'P. ant. SX','Parafango ant. SX':'Par. ant. SX','Tetto':'Tetto','Montante DX':'Mont. DX','Montante SX':'Mont. SX'},EN:{'Cofano anteriore':'Front hood','Parafango ant. DX':'Fender FR','Portiera ant. DX':'Door FR','Portiera post. DX':'Door RR','Parafango post. DX':'Fender RR','Baule':'Boot','Parafango post. SX':'Fender RL','Portiera post. SX':'Door RL','Portiera ant. SX':'Door FL','Parafango ant. SX':'Fender FL','Tetto':'Roof','Montante DX':'Pillar R','Montante SX':'Pillar L'},FR:{'Cofano anteriore':'Capot av.','Parafango ant. DX':'Aile av. D','Portiera ant. DX':'Porte av. D','Portiera post. DX':'Porte ar. D','Parafango post. DX':'Aile ar. D','Baule':'Coffre','Parafango post. SX':'Aile ar. G','Portiera post. SX':'Porte ar. G','Portiera ant. SX':'Porte av. G','Parafango ant. SX':'Aile av. G','Tetto':'Toit','Montante DX':'Mont. D','Montante SX':'Mont. G'},ES:{'Cofano anteriore':'Capó del.','Parafango ant. DX':'Aleta del. D','Portiera ant. DX':'Puerta del. D','Portiera post. DX':'Puerta tr. D','Parafango post. DX':'Aleta tr. D','Baule':'Maletero','Parafango post. SX':'Aleta tr. I','Portiera post. SX':'Puerta tr. I','Portiera ant. SX':'Puerta del. I','Parafango ant. SX':'Aleta del. I','Tetto':'Techo','Montante DX':'Mont. D','Montante SX':'Mont. I'},DE:{'Cofano anteriore':'Motorhaube','Parafango ant. DX':'Kotfl. v. R','Portiera ant. DX':'Tür v. R','Portiera post. DX':'Tür h. R','Parafango post. DX':'Kotfl. h. R','Baule':'Kofferr.','Parafango post. SX':'Kotfl. h. L','Portiera post. SX':'Tür h. L','Portiera ant. SX':'Tür v. L','Parafango ant. SX':'Kotfl. v. L','Tetto':'Dach','Montante DX':'Säule R','Montante SX':'Säule L'}};
+  const PNAMES={IT:{'Cofano anteriore':'Cofano ant.','Parafango ant. DX':'Par. ant. DX','Portiera ant. DX':'P. ant. DX','Portiera post. DX':'P. post. DX','Parafango post. DX':'Par. post. DX','Baule':'Baule','Spoiler baule':'Spoiler baule','Parafango post. SX':'Par. post. SX','Portiera post. SX':'P. post. SX','Portiera ant. SX':'P. ant. SX','Parafango ant. SX':'Par. ant. SX','Tetto':'Tetto','Montante DX':'Mont. DX','Montante SX':'Mont. SX'},EN:{'Cofano anteriore':'Front hood','Parafango ant. DX':'Fender FR','Portiera ant. DX':'Door FR','Portiera post. DX':'Door RR','Parafango post. DX':'Fender RR','Baule':'Boot','Spoiler baule':'Boot spoiler','Parafango post. SX':'Fender RL','Portiera post. SX':'Door RL','Portiera ant. SX':'Door FL','Parafango ant. SX':'Fender FL','Tetto':'Roof','Montante DX':'Pillar R','Montante SX':'Pillar L'},FR:{'Cofano anteriore':'Capot av.','Parafango ant. DX':'Aile av. D','Portiera ant. DX':'Porte av. D','Portiera post. DX':'Porte ar. D','Parafango post. DX':'Aile ar. D','Baule':'Coffre','Spoiler baule':'Becquet de coffre','Parafango post. SX':'Aile ar. G','Portiera post. SX':'Porte ar. G','Portiera ant. SX':'Porte av. G','Parafango ant. SX':'Aile av. G','Tetto':'Toit','Montante DX':'Mont. D','Montante SX':'Mont. G'},ES:{'Cofano anteriore':'Capó del.','Parafango ant. DX':'Aleta del. D','Portiera ant. DX':'Puerta del. D','Portiera post. DX':'Puerta tr. D','Parafango post. DX':'Aleta tr. D','Baule':'Maletero','Spoiler baule':'Alerón maletero','Parafango post. SX':'Aleta tr. I','Portiera post. SX':'Puerta tr. I','Portiera ant. SX':'Puerta del. I','Parafango ant. SX':'Aleta del. I','Tetto':'Techo','Montante DX':'Mont. D','Montante SX':'Mont. I'},DE:{'Cofano anteriore':'Motorhaube','Parafango ant. DX':'Kotfl. v. R','Portiera ant. DX':'Tür v. R','Portiera post. DX':'Tür h. R','Parafango post. DX':'Kotfl. h. R','Baule':'Kofferr.','Spoiler baule':'Heckspoiler','Parafango post. SX':'Kotfl. h. L','Portiera post. SX':'Tür h. L','Portiera ant. SX':'Tür v. L','Parafango ant. SX':'Kotfl. v. L','Tetto':'Dach','Montante DX':'Säule R','Montante SX':'Säule L'}};
   const PN=PNAMES[L]||PNAMES.IT;
   const COLOR_TR={EN:{bianco:'White',nero:'Black',grigio:'Grey',argento:'Silver',rosso:'Red',blu:'Blue',verde:'Green',beige:'Beige',marrone:'Brown',arancio:'Orange',giallo:'Yellow',viola:'Purple',oro:'Gold',bronzo:'Bronze',azzurro:'Light blue'},FR:{bianco:'Blanc',nero:'Noir',grigio:'Gris',argento:'Argent',rosso:'Rouge',blu:'Bleu',verde:'Vert',beige:'Beige',marrone:'Marron',arancio:'Orange',giallo:'Jaune',viola:'Violet',oro:'Or',bronzo:'Bronze',azzurro:'Bleu clair'},ES:{bianco:'Blanco',nero:'Negro',grigio:'Gris',argento:'Plata',rosso:'Rojo',blu:'Azul',verde:'Verde',beige:'Beige',marrone:'Marrón',arancio:'Naranja',giallo:'Amarillo',viola:'Morado',oro:'Oro',bronzo:'Bronce',azzurro:'Azul claro'},DE:{bianco:'Weiß',nero:'Schwarz',grigio:'Grau',argento:'Silber',rosso:'Rot',blu:'Blau',verde:'Grün',beige:'Beige',marrone:'Braun',arancio:'Orange',giallo:'Gelb',viola:'Lila',oro:'Gold',bronzo:'Bronze',azzurro:'Hellblau'}};
   const txC=c=>{if(!c)return'-';return(COLOR_TR[L]||{})[c.toLowerCase().trim()]||c;};
@@ -1044,6 +1030,34 @@ function downloadPdf(p){
     doc.setDrawColor(235,238,242);doc.setLineWidth(0.1);doc.line(ml,y+5.5,ml+tw,y+5.5);
     y+=5.5;
   });
+  // CUSTOM PANEL (in fondo, con traduzione lingua PDF)
+  const cstm=p.customPanel;
+  if(cstm&&cstm.name){
+    hasRows=true;
+    fr(ml,y,tw,5.5,250,251,253);
+    const translated=translateCustom(cstm.name,L);
+    const pn=translated.slice(0,28);
+    const isCP=cstm.type==='CP';
+    const isDAP=cstm.type==='DAP';
+    const isALU=cstm.type==='ALU';
+    const lavMain=cstm.type==='DSP'?'DSP':isDAP?'DAP':isCP?'CP':isALU?'DSP':'—';
+    const lavAlu=isALU?'ALU':'';
+    const bs=isCP?'—':String(+cstm.bolli||0);
+    const amt=isCP?money(cstm.cpPrice||0):'—';
+    sf('bold',7.5,15,23,42);doc.text(pn,cx[0]+2,y+3.8);
+    sf('normal',7.5,100,116,139);doc.text(bs,cx[1]+cols[1]/2,y+3.8,{align:'center'});
+    if(isCP||isDAP)sf('bold',7.5,200,30,30);
+    else sf('bold',7.5,15,23,42);
+    doc.text(lavMain,cx[2]+2,y+3.8);
+    if(lavAlu){
+      const mainW=doc.getTextWidth(lavMain);
+      sf('bold',7.5,217,119,6);
+      doc.text(lavAlu,cx[2]+2+mainW+2,y+3.8);
+    }
+    sf('bold',7.5,15,23,42);doc.text(amt,cx[3]+cols[3]-2,y+3.8,{align:'right'});
+    doc.setDrawColor(235,238,242);doc.setLineWidth(0.1);doc.line(ml,y+5.5,ml+tw,y+5.5);
+    y+=5.5;
+  }
   if(!hasRows&&p.pricingType==='forfait'){sf('normal',8,100,116,139);doc.text(p.forfaitRef||'Forfait',ml+2,y+4);sf('bold',8,15,23,42);doc.text(money(p.totalAmount),ml+tw-2,y+4,{align:'right'});y+=6;}
   else if(!hasRows){sf('normal',8,150,160,175);doc.text(t.pdfNone||'—',ml+2,y+4);y+=6;}
   y+=3;
@@ -1052,8 +1066,13 @@ function downloadPdf(p){
   const cd=p.calcDetail;
   const totRows=[];
   if(p.manualOverride){
-    // Prezzo concordato: niente importi parziali, MA mostro comunque il numero di bolli come info tecnica
-    if(cd&&cd.bolli)totRows.push([cd.bolli+' '+(t.pdfBolliWord||'bolli'),'']);
+    // Prezzo concordato: scompongo riparazione + smontaggio
+    const totalForced=+p.totalAmount||0;
+    const degP=cd?(+cd.degPrice||0):0;
+    const repairP=Math.max(0,totalForced-degP);
+    if(cd&&cd.bolli)totRows.push([cd.bolli+' '+(t.pdfBolliWord||'bolli'),money(repairP)]);
+    else totRows.push([(t.pdfTitle||'Preventivo'),money(repairP)]);
+    if(degP>0)totRows.push([degLbl,money(degP)]);
   } else if(cd){if(cd.matWithCoeff)totRows.push([cd.bolli+' '+(t.pdfBolliWord||'bolli'),money(cd.matWithCoeff)]);if(cd.cpTotal>0)totRows.push(['CP',money(cd.cpTotal)]);if(cd.degPrice>0)totRows.push([degLbl,money(cd.degPrice)]);}
   else if(p.pricingType==='forfait')totRows.push(['Forfait',money(p.totalAmount)]);
   totRows.push(['__TOTAL__',money(p.totalAmount)]);
@@ -1120,13 +1139,14 @@ function renderDetail(id){
   const cd=p.calcDetail;
   const calcHtml=cd?(p.manualOverride?'':`<div style="background:var(--pl);border:1px solid var(--pr);border-radius:8px;padding:10px 14px;margin-bottom:10px;font-size:12px"><strong>${T('colSans').split(' ')[0]} calc.</strong> — ${cd.bolli} bolli · ${cd.col} · ${money(cd.matWithCoeff)}${cd.cpTotal>0?' · CP '+money(cd.cpTotal):''}${cd.degPrice>0?' · '+T('dismantling')+' '+money(cd.degPrice):''}</div>`):'';
   const panelRows=p.panels?PANELS.map(n=>{const v=p.panels[n];if(!v)return'';if(!v.cp&&!(+v.bolli>0)&&!v.dsp&&!v.dap)return'';const info=v.cp?'CP €'+(v.cpPrice||0):(+v.bolli||0)+' bolli'+(v.dsp?' DSP':'')+(v.dap?' DAP':'')+(v.alu?' ALU':'');return'<div class="dpanel-row"><span>'+n+'</span><span style="color:var(--mu)">'+info+'</span></div>';}).join(''):'';
+  const cpRow=p.customPanel&&p.customPanel.name?'<div class="dpanel-row"><span>★ '+p.customPanel.name+'</span><span style="color:var(--mu)">'+(p.customPanel.type==='CP'?'CP €'+(p.customPanel.cpPrice||0):(+p.customPanel.bolli||0)+' bolli '+p.customPanel.type)+'</span></div>':'';
   const dc=g('detail-content');
   dc.innerHTML=`<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px"><div><div style="font-size:16px;font-weight:700">${p.vehicleBrand} ${p.vehicleModel}</div><div style="color:var(--mu);font-size:12px">${p.customerName||'-'} · ${p.plate||p.vin||'-'}</div></div><span class="tag blue">${p.pricingType==='forfait'?T('forfaitTag'):T('assicTag')}</span></div>
   <div class="detail-grid"><div class="dc"><div class="dl">${T('plate')}</div><div class="dv">${p.plate||'-'}</div></div><div class="dc"><div class="dl">${T('vin')}</div><div class="dv" style="font-size:11px;word-break:break-all">${p.vin||'-'}</div></div><div class="dc"><div class="dl">${T('color')}</div><div class="dv">${p.color||'-'}</div></div><div class="dc"><div class="dl">${T('qdate')}</div><div class="dv">${fmtDate(p.quoteDate)}</div></div><div class="dc"><div class="dl">${T('rdate')}</div><div class="dv"><input type="date" id="edit-rdate-${id}" value="${p.repairDate||''}" class="inline-date"></div></div><div class="dc"><div class="dl">${T('thTot')}</div><div class="dv">${money(p.totalAmount)}</div></div>${p.pricingType==='assicurativo'&&p.insurance?'<div class="dc"><div class="dl">'+T('insurance')+'</div><div class="dv">'+p.insurance+'</div></div>':''}</div>
   ${calcHtml}
   <div style="margin-bottom:10px"><div class="sect-label">${T('repStatus')}</div><div id="det-rep-btns" style="display:flex;gap:6px;flex-wrap:wrap"></div></div>
   <div style="margin-bottom:10px"><div class="sect-label">${T('billStatus')}</div><div id="det-bill-btns" style="display:flex;gap:6px;flex-wrap:wrap"></div></div>
-  ${panelRows?'<div style="margin-bottom:10px"><div class="sect-label">'+T('panelDetail')+'</div>'+panelRows+'</div>':''}
+  ${(panelRows||cpRow)?'<div style="margin-bottom:10px"><div class="sect-label">'+T('panelDetail')+'</div>'+panelRows+cpRow+'</div>':''}
   ${p.notes?'<div style="padding:10px;background:var(--sf2);border-radius:8px;font-size:12px;color:var(--mu);margin-bottom:10px">'+p.notes+'</div>':''}
   <div id="det-act-btns" style="display:flex;gap:6px;flex-wrap:wrap"></div>`;
   const rb=g('det-rep-btns');
@@ -1152,7 +1172,6 @@ function renderDetail(id){
   const ab=g('det-act-btns');
   const mkB=(lbl,cls,cb)=>{const b=document.createElement('button');b.className='btn sm '+cls;b.textContent=lbl;b.addEventListener('click',cb);ab.appendChild(b);};
   mkB(T('dlPdf'),'primary',()=>downloadPdf(p));
-  mkB(T('emailP')||'Invia email','',()=>sendQuoteEmail(p));
   mkB(T('editP'),'',()=>{goTo('v-prev');editId=id;g('inp-lp').value=p.plate||'';g('inp-lv').value=p.vin||'';g('pform-wrap').classList.remove('hidden');fillFrom(p);g('edit-notice').classList.remove('hidden');});
   mkB(T('delP'),'danger',()=>{if(!confirm(T('confirmDelP')))return;practices=practices.filter(x=>x.id!==id);activeId=null;save();cloudDeletePractice(id);renderTable();g('detail-box').classList.add('hidden');});
   // V9: data riparazione modificabile inline
@@ -1361,7 +1380,66 @@ if(g('inp-ins')){
   g('inp-ins').addEventListener('input',()=>{const v=gv('inp-ins').toLowerCase();drawSug('sug-ins',allInsurances().filter(c=>c.toLowerCase().includes(v)),val=>{g('inp-ins').value=val;});});
   g('inp-ins').addEventListener('focus',()=>drawSug('sug-ins',allInsurances(),val=>{g('inp-ins').value=val;}));
 }
-g('inp-cust').addEventListener('input',()=>{const v=gv('inp-cust').toLowerCase();const list=clients.filter(c=>[c.name,c.company].join(' ').toLowerCase().includes(v));const box=g('sug-cust');if(!box)return;box.innerHTML='';box.classList.toggle('hidden',!list.length);list.slice(0,8).forEach(c=>{const d=document.createElement('div');d.className='sw-item';d.innerHTML='<strong>'+c.name+'</strong>'+(c.company&&c.company!==c.name?' · '+c.company:'');d.addEventListener('mousedown',e=>{e.preventDefault();g('inp-cust').value=c.name;box.classList.add('hidden');});box.appendChild(d);});});
+g('inp-cust').addEventListener('input',()=>{const v=gv('inp-cust').toLowerCase();const list=clients.filter(c=>[c.name,c.company].join(' ').toLowerCase().includes(v));const box=g('sug-cust');if(!box)return;box.innerHTML='';box.classList.toggle('hidden',!list.length);list.slice(0,8).forEach(c=>{const d=document.createElement('div');d.className='sw-item';d.innerHTML='<strong>'+c.name+'</strong>'+(c.company&&c.company!==c.name?' · '+c.company:'');d.addEventListener('mousedown',e=>{e.preventDefault();g('inp-cust').value=c.name;box.classList.add('hidden');autoCoeffForCustomer(c.name);});box.appendChild(d);});});
+// auto-imposta ultimo coefficiente usato per quel cliente
+function autoCoeffForCustomer(name){
+  if(!name)return;
+  const n=name.trim().toLowerCase();if(!n)return;
+  // pratiche di questo cliente ordinate per data più recente
+  const recent=practices.filter(p=>(p.customerName||'').toLowerCase()===n&&p.coeff).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  if(recent.length&&recent[0].coeff){
+    const c=+recent[0].coeff;
+    if(c>0&&g('pcoeff-input')){g('pcoeff-input').value=c.toFixed(2);refreshTotal();}
+  }
+}
+// quando l'utente esce dal campo cliente (blur), prova ad applicare coeff storico
+g('inp-cust').addEventListener('blur',()=>{setTimeout(()=>autoCoeffForCustomer(gv('inp-cust')),100);});
+// listener pcoeff: ricalcola al cambio (mantiene prezzo forzato)
+const _pc=g('pcoeff-input');if(_pc)_pc.addEventListener('input',()=>{refreshTotal();});
+
+// Custom panel: mostra prezzo CP solo se tipo=CP, e ricalcola al cambio
+const _cn=g('custom-name'),_cb=g('custom-bolli'),_ct=g('custom-type'),_ccp=g('custom-cp-price'),_ccpr=g('custom-cp-row');
+function updCustomUI(){if(!_ct||!_ccpr)return;_ccpr.style.display=(_ct.value==='CP')?'block':'none';}
+if(_ct){_ct.addEventListener('change',()=>{updCustomUI();refreshTotal();});}
+[_cn,_cb,_ccp].forEach(el=>{if(el)el.addEventListener('input',()=>{refreshTotal();});});
+
+// dizionario interno traduzione pannelli custom comuni
+const CUSTOM_DICT={
+  'sportello carburante':{EN:'Fuel door',FR:'Trappe à carburant',ES:'Tapa de combustible',DE:'Tankklappe'},
+  'sportello batteria':{EN:'Battery door',FR:'Trappe batterie',ES:'Tapa batería',DE:'Batterieklappe'},
+  'maniglione':{EN:'Handle',FR:'Poignée',ES:'Asa',DE:'Griff'},
+  'maniglia':{EN:'Handle',FR:'Poignée',ES:'Manilla',DE:'Türgriff'},
+  'minigonna':{EN:'Side skirt',FR:'Bas de caisse',ES:'Faldón lateral',DE:'Seitenschweller'},
+  'paraurti anteriore':{EN:'Front bumper',FR:'Pare-chocs avant',ES:'Paragolpes delantero',DE:'Stoßstange vorne'},
+  'paraurti posteriore':{EN:'Rear bumper',FR:'Pare-chocs arrière',ES:'Paragolpes trasero',DE:'Stoßstange hinten'},
+  'specchietto':{EN:'Mirror',FR:'Rétroviseur',ES:'Espejo',DE:'Spiegel'},
+  'modanatura':{EN:'Trim',FR:'Baguette',ES:'Moldura',DE:'Zierleiste'},
+  'soglia':{EN:'Sill',FR:'Seuil',ES:'Estribo',DE:'Schweller'},
+  'spoiler':{EN:'Spoiler',FR:'Becquet',ES:'Alerón',DE:'Spoiler'},
+  'parafango':{EN:'Fender',FR:'Aile',ES:'Aleta',DE:'Kotflügel'},
+  'portellone':{EN:'Tailgate',FR:'Hayon',ES:'Portón',DE:'Heckklappe'},
+  'cofano motore':{EN:'Engine hood',FR:'Capot moteur',ES:'Capó motor',DE:'Motorhaube'}
+};
+function translateCustom(name,lang){
+  if(!name)return '';
+  if(lang==='IT')return name;
+  const n=name.trim().toLowerCase();
+  if(CUSTOM_DICT[n]&&CUSTOM_DICT[n][lang])return CUSTOM_DICT[n][lang];
+  // cerco match parziale
+  for(const key in CUSTOM_DICT){
+    if(n.includes(key)&&CUSTOM_DICT[key][lang]){
+      return CUSTOM_DICT[key][lang]+name.toLowerCase().replace(key,'');
+    }
+  }
+  return name; // fallback: come l'ha scritto
+}
+function getCustomPanel(){
+  const name=gv('custom-name');if(!name||!name.trim())return null;
+  const bolli=+gv('custom-bolli')||0;
+  const type=gv('custom-type')||'DSP';
+  const cpPrice=+gv('custom-cp-price')||0;
+  return {name:name.trim(),bolli,type,cpPrice};
+}
 g('inp-cust').addEventListener('focus',()=>g('inp-cust').dispatchEvent(new Event('input')));
 document.addEventListener('click',e=>{['sug-brand','sug-model','sug-cust','sug-color','sug-ins'].forEach(id=>{const b=g(id);if(b&&!b.contains(e.target))b.classList.add('hidden');});});
 
@@ -1371,8 +1449,6 @@ function fillSettings(){
   if(g('set-uilang'))g('set-uilang').value=settings.uiLang||'IT';
   if(g('set-pdflang'))g('set-pdflang').value=settings.pdfLang||'IT';
   if(g('set-theme'))g('set-theme').value=settings.theme||'dark';
-  const c=+settings.coeff||1;
-  if(g('coeff-slider'))g('coeff-slider').value=c;if(g('coeff-display'))g('coeff-display').textContent='×'+c.toFixed(2);if(g('coeff-input'))g('coeff-input').value=c.toFixed(2);
   if(g('deg-A-set'))g('deg-A-set').value=deg.A||0;if(g('deg-B-set'))g('deg-B-set').value=deg.B||0;if(g('deg-C-set'))g('deg-C-set').value=deg.C||0;
   renderTariffTable();
   renderCampaigns();
@@ -1381,11 +1457,10 @@ function renderTariffTable(){
   const tbody=g('tariff-body');if(!tbody)return;tbody.innerHTML='';
   matrix.forEach((row,i)=>{const tr=document.createElement('tr');const td0=document.createElement('td');td0.textContent=row[0];tr.appendChild(td0);[1,2,3].forEach(ci=>{const td=document.createElement('td');const inp=document.createElement('input');inp.type='number';inp.min='0';inp.step='1';inp.value=row[ci];inp.addEventListener('input',()=>{matrix[i][ci]=+inp.value||0;});td.appendChild(inp);tr.appendChild(td);});tbody.appendChild(tr);});
 }
-g('coeff-slider').addEventListener('input',function(){const v=+this.value;settings.coeff=v;g('coeff-display').textContent='×'+v.toFixed(2);g('coeff-input').value=v.toFixed(2);refreshTotal();});
-g('coeff-input').addEventListener('input',function(){const v=Math.min(2.5,Math.max(0.25,+this.value||1));settings.coeff=v;g('coeff-slider').value=v;g('coeff-display').textContent='×'+v.toFixed(2);refreshTotal();});
 g('btn-saveset').addEventListener('click',()=>{
+  if(!confirm('Vuoi salvare le impostazioni?'))return;
   ['company','tech','email','phone','vat','addr','cap','city','country','footer'].forEach(k=>{if(g('set-'+k))settings[k]=g('set-'+k).value;});
-  settings.uiLang=gv('set-uilang')||'IT';settings.pdfLang=gv('set-pdflang')||'IT';settings.theme=gv('set-theme')||'light';settings.coeff=+gv('coeff-input')||1;
+  settings.uiLang=gv('set-uilang')||'IT';settings.pdfLang=gv('set-pdflang')||'IT';settings.theme=gv('set-theme')||'light';
   deg.A=+gv('deg-A-set')||0;deg.B=+gv('deg-B-set')||0;deg.C=+gv('deg-C-set')||0;
   save();cloudSaveSettings();applyTheme(settings.theme);applyI18n();toast((DICT[settings.uiLang]||DICT.IT).setsSaved);
 });
@@ -1481,9 +1556,14 @@ async function doLogout(){
 async function onAuthenticated(user){
   currentUser=user;
   document.getElementById('user-email').textContent=user.email||'';
+  // FIX lampo dati vecchi: pulisco stato in memoria + cache prima di mostrare l'app
+  practices=[];clients=[];campaigns=[];customInsurances=[];
+  try{Object.values(SK).forEach(k=>localStorage.removeItem(k));}catch(e){}
+  // ripristino dei default settings/matrix/deg
+  settings=Object.assign({},DEFAULT_SETTINGS);matrix=JSON.parse(JSON.stringify(DEFAULT_MATRIX));deg=Object.assign({},DEFAULT_DEG);
   showApp();
   setSyncStatus('busy','sync…');
-  // 1. carica coda pendente da localStorage
+  // 1. carica coda pendente da localStorage (dell'utente che si sta loggando)
   loadPendingQueue();
   // 2. flush coda (operazioni offline da sincronizzare)
   if(pendingSync.length)await flushQueue();
