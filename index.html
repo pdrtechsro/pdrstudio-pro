@@ -14,8 +14,8 @@
 <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png"/>
 <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png"/>
 <link rel="manifest" href="manifest.json"/>
-<meta name="app-version" content="3.2.1"/>
-<meta name="app-build" content="2026-05-16-D"/>
+<meta name="app-version" content="3.2.2"/>
+<meta name="app-build" content="2026-05-16-E"/>
 <title>PDRStudio</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -262,8 +262,8 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--sf2)}tr.sel t
           <div class="fg">
             <div class="field sw-wrap" id="fld-cust"><label id="lbl-cust">Cliente / Azienda</label><input id="inp-cust" autocomplete="off"><div id="sug-cust" class="sw-box hidden"></div><div class="err">Campo obbligatorio.</div></div>
             <div class="field sw-wrap" id="fld-ins"><label id="lbl-ins">Assicurazione</label><input id="inp-ins" autocomplete="off"><div id="sug-ins" class="sw-box hidden"></div></div>
-            <div class="field sw-wrap" id="fld-brand"><label id="lbl-brand">Marca</label><input id="inp-brand" autocomplete="off"><div id="sug-brand" class="sw-box hidden"></div><div class="err">Marca non valida.</div></div>
-            <div class="field sw-wrap" id="fld-model"><label id="lbl-model">Modello</label><input id="inp-model" autocomplete="off"><div id="sug-model" class="sw-box hidden"></div><div class="err">Modello non valido.</div></div>
+            <div class="field sw-wrap" id="fld-brand"><label id="lbl-brand">Marca</label><input id="inp-brand" autocomplete="off"><div id="sug-brand" class="sw-box hidden"></div><div class="err">Campo obbligatorio.</div></div>
+            <div class="field sw-wrap" id="fld-model"><label id="lbl-model">Modello</label><input id="inp-model" autocomplete="off"><div id="sug-model" class="sw-box hidden"></div><div class="err">Campo obbligatorio.</div></div>
             <div class="field" id="fld-plate"><label id="lbl-plate">Targa</label><input id="inp-plate"><div class="err">Targa non valida o duplicata.</div></div>
             <div class="field" id="fld-vin"><label id="lbl-vin">VIN / Telaio</label><input id="inp-vin" maxlength="17"><div class="err">VIN non valido o duplicato.</div></div>
             <div class="field sw-wrap"><label id="lbl-color">Colore</label><input id="inp-color" autocomplete="off"><div id="sug-color" class="sw-box hidden"></div></div>
@@ -503,8 +503,8 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--sf2)}tr.sel t
 <div id="toast"></div>
 <script>
 /* ═══════════════ VERSIONE ═══════════════ */
-const APP_VERSION='3.2.1';
-const APP_BUILD='2026-05-16-D';
+const APP_VERSION='3.2.2';
+const APP_BUILD='2026-05-16-E';
 console.log('%c PDRStudio %cv'+APP_VERSION+' · build '+APP_BUILD,'background:#4F63FF;color:white;padding:2px 6px;border-radius:3px;font-weight:bold','color:#666;margin-left:4px');
 
 /* ═══════════════ SUPABASE CONFIG ═══════════════ */
@@ -888,7 +888,7 @@ function validate(){
   const fld=(id,v)=>{const e=g(id);if(!e)return;e.classList.toggle('invalid',!v);if(!v)ok=false;};
   fld('fld-qdate',!!gv('inp-date'));fld('fld-cust',!!gv('inp-cust').trim());
   const brand=gv('inp-brand').trim(),model=gv('inp-model').trim();
-  fld('fld-brand',!!(brand&&VEHICLES[brand]));fld('fld-model',!!(model&&brand&&(VEHICLES[brand]||[]).includes(model)));
+  fld('fld-brand',!!brand);fld('fld-model',!!model);
   const plate=gv('inp-plate').trim(),vin=gv('inp-vin').trim();
   const hasId=!!(plate||vin);
   const plateDup=!!plate&&practices.some(p=>p.id!==editId&&norm(p.plate)===plate);
