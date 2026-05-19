@@ -14,8 +14,8 @@
 <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png"/>
 <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png"/>
 <link rel="manifest" href="manifest.json"/>
-<meta name="app-version" content="3.2.3"/>
-<meta name="app-build" content="2026-05-16-F"/>
+<meta name="app-version" content="3.2.4"/>
+<meta name="app-build" content="2026-05-16-G"/>
 <title>PDRStudio</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -512,8 +512,8 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--sf2)}tr.sel t
 <div id="toast"></div>
 <script>
 /* ═══════════════ VERSIONE ═══════════════ */
-const APP_VERSION='3.2.3';
-const APP_BUILD='2026-05-16-F';
+const APP_VERSION='3.2.4';
+const APP_BUILD='2026-05-16-G';
 console.log('%c PDRStudio %cv'+APP_VERSION+' · build '+APP_BUILD,'background:#4F63FF;color:white;padding:2px 6px;border-radius:3px;font-weight:bold','color:#666;margin-left:4px');
 
 /* ═══════════════ SUPABASE CONFIG ═══════════════ */
@@ -1906,26 +1906,43 @@ async function init(){
   // verifico sessione esistente PRIMA di nascondere splash
   if(supa){
     setSyncStatus('busy','check…');
-    try{
-      const {data}=await supa.auth.getSession();
-      if(data&&data.session&&data.session.user){
-        // sessione valida → nascondo splash e vado all'app
-        const sp=document.getElementById('splash');if(sp)sp.style.display='none';
-        await onAuthenticated(data.session.user);
-        return;
-      }
-    }catch(e){console.error('getSession error:',e);}
-    // ascolto auth state changes (gestisco solo casi NON innescati da doLogout)
-    supa.auth.onAuthStateChange((event,session)=>{
+    // 1. registro listener PRIMA di getSession per non perdere eventi
+    let sessionHandled=false;
+    supa.auth.onAuthStateChange(async(event,session)=>{
+      console.log('[auth] event:',event,'user:',session?.user?.email||'none');
       if(event==='SIGNED_OUT'&&!isLoggingOut){
-        // sessione scaduta o invalidata esternamente
         currentUser=null;
         const ue=document.getElementById('user-email');if(ue)ue.textContent='';
         setSyncStatus('offline','offline');
         showAuthScreen();
         setAuthMode('login');
+        return;
+      }
+      // INITIAL_SESSION / SIGNED_IN / TOKEN_REFRESHED → autentico se ho una sessione valida
+      if(session&&session.user&&!sessionHandled){
+        sessionHandled=true;
+        const sp=document.getElementById('splash');if(sp)sp.style.display='none';
+        await onAuthenticated(session.user);
       }
     });
+    // 2. provo getSession con retry (può fallire al primo colpo per timing)
+    let session=null;
+    for(let attempt=0;attempt<3;attempt++){
+      try{
+        const {data}=await supa.auth.getSession();
+        if(data&&data.session&&data.session.user){session=data.session;break;}
+      }catch(e){console.error('getSession attempt',attempt,'error:',e);}
+      // breve pausa prima del retry
+      await new Promise(r=>setTimeout(r,150));
+    }
+    if(session&&!sessionHandled){
+      sessionHandled=true;
+      const sp=document.getElementById('splash');if(sp)sp.style.display='none';
+      await onAuthenticated(session.user);
+      return;
+    }
+    // 3. se sessionHandled è true, il listener ha già fatto il lavoro
+    if(sessionHandled)return;
   }
   // non autenticato → nascondo splash + mostro login
   const sp=document.getElementById('splash');if(sp)sp.style.display='none';
