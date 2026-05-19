@@ -14,8 +14,8 @@
 <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png"/>
 <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png"/>
 <link rel="manifest" href="manifest.json"/>
-<meta name="app-version" content="3.1.0"/>
-<meta name="app-build" content="2026-05-16-B"/>
+<meta name="app-version" content="3.2.1"/>
+<meta name="app-build" content="2026-05-16-D"/>
 <title>PDRStudio</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -80,7 +80,10 @@ th{background:var(--sf2);font-size:11px;font-weight:600;color:var(--mu);text-tra
 td{padding:9px 12px;border-bottom:1px solid var(--bd);font-size:13px}
 tr:last-child td{border-bottom:none}
 tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--sf2)}tr.sel td{background:var(--pl)}
-.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px}
+.kpi-highlight{background:linear-gradient(135deg,var(--pl) 0%,var(--sf) 100%);border:1.5px solid var(--pr)}
+.kpi-highlight .kpi-label{color:var(--pr)}
+.kpi-highlight .kpi-value{color:var(--pr)}
 .kpi-sub{font-size:13px;color:var(--tx);font-weight:600;margin-top:3px}
 .inline-date{background:transparent;border:1px dashed var(--bd);border-radius:6px;padding:2px 6px;font-size:13px;color:var(--tx);font-family:inherit;cursor:pointer;transition:.15s;font-weight:600}
 .inline-date:hover{border-color:var(--pr);background:var(--pl)}
@@ -183,7 +186,7 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--sf2)}tr.sel t
 .type-btn{padding:10px;border-radius:var(--rs);font-weight:600;font-size:13px;border:1px solid var(--bd);background:var(--sf2);color:var(--mu);cursor:pointer}
 .type-btn.active{background:var(--pr);color:#fff;border-color:transparent}
 #toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 22px;border-radius:10px;font-size:13px;font-weight:600;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
-@media(max-width:600px){.kpi-grid,.detail-grid{grid-template-columns:1fr 1fr}.filter-row,.fg{grid-template-columns:1fr}.fg.c3{grid-template-columns:1fr 1fr}.panel-item{grid-template-columns:1fr}}
+@media(max-width:600px){.kpi-grid{grid-template-columns:1fr 1fr}.kpi-grid .kpi-highlight{grid-column:1/-1}.detail-grid{grid-template-columns:1fr 1fr}.filter-row,.fg{grid-template-columns:1fr}.fg.c3{grid-template-columns:1fr 1fr}.panel-item{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -370,6 +373,10 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--sf2)}tr.sel t
     <section id="v-cli" class="view">
       <div class="card">
         <div class="card-title" id="ttl-addcli">Aggiungi cliente</div>
+        <div id="cli-edit-notice" class="hidden" style="background:var(--pl);border:1px solid var(--pr);color:var(--pr);padding:8px 12px;border-radius:8px;font-size:12px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:8px">
+          <span>✏️ Stai modificando: <strong id="cli-edit-name"></strong></span>
+          <button class="btn sm" id="btn-cli-cancel" style="padding:4px 10px">Annulla</button>
+        </div>
         <div class="type-sw">
           <button class="type-btn active" id="ctype-biz">Azienda</button>
           <button class="type-btn" id="ctype-priv">Privato</button>
@@ -399,6 +406,23 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--sf2)}tr.sel t
             <div class="field"><label id="lbl-ccountry2">Paese</label><input id="inp-ccountry2"></div>
             <div class="field sp2"><label id="lbl-cnotes2">Note</label><textarea id="inp-cnotes2"></textarea></div>
           </div>
+        </div>
+        <div class="card" style="background:var(--sf2);border:1px dashed var(--bd);padding:12px;margin-top:12px;border-radius:8px">
+          <div style="font-size:11px;color:var(--mu);font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em">Quota tecnico (opzionale)</div>
+          <div style="display:grid;grid-template-columns:120px 1fr;gap:10px;align-items:end">
+            <div>
+              <label style="font-size:10px;color:var(--mu);display:block;margin-bottom:3px">% Quota a te</label>
+              <input id="inp-cshare" type="number" min="0" max="100" step="0.1" placeholder="100" style="width:100%;padding:6px 8px;border:1px solid var(--bd);background:var(--sf);border-radius:6px;text-align:center;font-weight:600">
+            </div>
+            <div>
+              <label style="font-size:10px;color:var(--mu);display:block;margin-bottom:3px">Si applica a</label>
+              <select id="inp-cshare-on" style="width:100%;padding:6px 8px;border:1px solid var(--bd);background:var(--sf);border-radius:6px">
+                <option value="total">Totale scheda (riparazione + smontaggio)</option>
+                <option value="repair">Solo riparazione (smontaggio interamente a te)</option>
+              </select>
+            </div>
+          </div>
+          <div style="font-size:10px;color:var(--mu);margin-top:6px;opacity:.8">Lascia vuoto per 100% (tutto a te). Es. 70 = ti spetta il 70% del prezzo.</div>
         </div>
         <div class="btn-row"><button class="btn primary" id="btn-savecli">Salva cliente</button></div>
       </div>
@@ -479,8 +503,8 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--sf2)}tr.sel t
 <div id="toast"></div>
 <script>
 /* ═══════════════ VERSIONE ═══════════════ */
-const APP_VERSION='3.1.0';
-const APP_BUILD='2026-05-16-B';
+const APP_VERSION='3.2.1';
+const APP_BUILD='2026-05-16-D';
 console.log('%c PDRStudio %cv'+APP_VERSION+' · build '+APP_BUILD,'background:#4F63FF;color:white;padding:2px 6px;border-radius:3px;font-weight:bold','color:#666;margin-left:4px');
 
 /* ═══════════════ SUPABASE CONFIG ═══════════════ */
@@ -512,7 +536,7 @@ const VEHICLES={'Alfa Romeo':['147','156','159','166','Giulia','Giulietta','MiTo
 
 /* ═══════════════ I18N ═══════════════ */
 const DICT={
-IT:{navPrev:'Preventivo',navAuto:'Veicoli',navDash:'Dashboard',navCli:'Clienti',navSet:'Impostazioni',brandSub:'Preventivi · Veicoli · Dashboard',newQuote:'Nuovo preventivo',lookupSub:'Inserisci targa e/o VIN per cercare o creare una pratica.',lplate:'Targa',lvin:'VIN / Telaio',qtype:'Tipo preventivo',mAssic:'Assicurativo',mForfait:'Forfait',pdata:'Dati pratica',qdate:'Data preventivo *',rdate:'Data riparazione (opzionale)',pcamp:'Ciclo Lavorativo',cust:'Cliente / Azienda',brand:'Marca',model:'Modello',color:'Colore',notes:'Note',plate:'Targa',vin:'VIN / Telaio',insurance:'Assicurazione',degTitle:'Smontaggio',degSub:'Categoria veicolo. Prezzo fisso, NON moltiplicato.',degNone:'Nessuno',degA:'Cat. A — Utilitarie',degB:'Cat. B — Berlina media',degC:'Cat. C — SUV / Monovolume',panelsTitle:'Pannelli — bolli e lavorazione',panelsSub:'Pannelli preimpostati su DSP. Modifica solo se serve DAP, CP o ALU.',totalLbl:'Totale preventivo (IVA esclusa)',save:'Salva pratica',pdfBtn:'Scarica PDF',resetBtn:'Reset',forfaitTitle:'Forfait',famount:'Importo totale (€)',fref:'Riferimento',ftotal:'Totale forfait',vehicles:'Archivio veicoli',search:'Cerca',ftype:'Tipo',frep:'Riparazione',fbill:'Pagamento',thCli:'Cliente',thVeh:'Veicolo',thPlate:'Targa',thType:'Tipo',thRep:'Rip.',thPay:'Pag.',thTot:'Totale',assicTag:'Assicurativo',forfaitTag:'Forfait',created:'Preventivato',repaired:'Riparata',billNone:'Non fatt.',billInv:'Fatturata',billPaid:'Saldata',notAvail:'—',monthly:'Fatturato mensile',recent:'Ultime pratiche',kTotal:'Pratiche totali',kCashed:'Incassato',kPending:'In attesa',kRep:'Riparate',kSeason:'Totale stagione',kToRepair:'Auto preventivate da riparare',kToBill:'Auto riparate da fatturare',kBilled:'Auto riparate da incassare',kPaid:'Auto riparate e incassate',emailBtn:'Invia email',emailP:'Invia email',dashFiscal:'Anno Fiscale',dashCamp:'Ciclo Lavorativo',dashYr:'Anno fiscale',dashCampSel:'Ciclo selezionato',addCli:'Aggiungi cliente',priv:'Privato',biz:'Azienda',cfname:'Nome *',clname:'Cognome *',cphone:'Telefono *',cemail:'Email',ccap:'CAP',ccity:'Città',cnotes:'Note',cco:'Ragione sociale *',ccontact:'Referente',cphone2:'Telefono *',cemail2:'Email',cvat:'P.IVA / CF',caddr:'Indirizzo',ccap2:'CAP',ccity2:'Città',ccountry2:'Paese',cnotes2:'Note',saveCli:'Salva cliente',clientbook:'Rubrica',noCli:'Nessun cliente.',companyData:'Dati aziendali',scompany:'Ragione sociale',stech:'Nome tecnico',sphone:'Telefono',svat:'P.IVA',saddr:'Indirizzo',scity:'Città',scountry:'Nazione',sfooter:'Footer PDF',coeffTitle:'Coefficiente moltiplicatore',coeffSub:'Moltiplica il prezzo matrice. Lo smontaggio NON viene moltiplicato.',coeffDirect:'Valore diretto:',tariffTitle:'Tariffario matrice bolli',tariffSub:'DSP e DAP stesso prezzo. ALU cofano ant. usa colonna ALU.',bolliRange:'Bolli',sans:'Senza cofano',avec:'Con cofano',aluCol:'Con cofano ALU',deg2:'Smontaggio — tariffe',deg2sub:'Prezzi fissi. NON moltiplicati.',degASet:'Cat. A — utilitarie',degBSet:'Cat. B — berlina media',degCSet:'Cat. C — SUV / Monovolume',campTitle:'Cicli Lavorativi annuali',campSub:'Crea e gestisci i cicli di lavoro legati alle grandinate.',campName:'Nome ciclo',campStart:'Data inizio',campEnd:'Data fine (opzionale)',campAdd:'+ Aggiungi ciclo',prefs:'Preferenze',uilang:'Lingua interfaccia',pdflang:'Lingua preventivi',theme:'Tema',themeLight:'Chiaro',themeDark:'Scuro',saveSet:'Salva impostazioni',clearAll:'Cancella tutto',repStatus:'Stato riparazione',billStatus:'Stato pagamento',panelDetail:'Pannelli',editP:'Modifica',delP:'Elimina',dlPdf:'Scarica PDF',confirmDelP:'Eliminare questa pratica?',confirmDelC:'Eliminare questo cliente?',confirmClear:'Eliminare tutti i dati?',editNotice:'⚠ Veicolo già presente — stai modificando la pratica esistente.',savedOk:'Pratica salvata!',cliSaved:'Cliente salvato!',setsSaved:'Impostazioni salvate!',dataCleared:'Dati eliminati.',errReq:'Campo obbligatorio.',errPlate:'Formato targa non valido.',errVin:'VIN: 17 caratteri alfanumerici.',errPlateDup:'Targa non valida o già presente.',errVinDup:'VIN non valido o già presente.',errPhone:'Formato telefono non valido.',noPlateVin:'Inserisci targa o VIN.',noPractices:'Nessuna pratica trovata.',colSans:'Senza cofano',colAvec:'Con cofano',colAlu:'Con cofano ALU',use:'Usa',months:['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'],pdfTitle:'Preventivo',pdfClient:'Cliente',pdfVeh:'Veicolo',pdfType:'Tipo',pdfAssic:'Assicurativo',pdfForfait:'Forfait',pdfDate:'Data',pdfPanel:'Pannello',pdfBolli:'Bolli',pdfBolliWord:'bolli',pdfWork:'Lavorazione',pdfAmt:'Importo',pdfTotal:'Totale (IVA esclusa)',pdfNotes:'Note',pdfSign:'Firma e timbro cliente',pdfInsurance:'Assicurazione',pdfNone:'Nessun pannello con danni.',pdfNoNotes:'Nessuna nota.',dismantling:'Smontaggio'},
+IT:{navPrev:'Preventivo',navAuto:'Veicoli',navDash:'Dashboard',navCli:'Clienti',navSet:'Impostazioni',brandSub:'Preventivi · Veicoli · Dashboard',newQuote:'Nuovo preventivo',lookupSub:'Inserisci targa e/o VIN per cercare o creare una pratica.',lplate:'Targa',lvin:'VIN / Telaio',qtype:'Tipo preventivo',mAssic:'Assicurativo',mForfait:'Forfait',pdata:'Dati pratica',qdate:'Data preventivo *',rdate:'Data riparazione (opzionale)',pcamp:'Ciclo Lavorativo',cust:'Cliente / Azienda',brand:'Marca',model:'Modello',color:'Colore',notes:'Note',plate:'Targa',vin:'VIN / Telaio',insurance:'Assicurazione',degTitle:'Smontaggio',degSub:'Categoria veicolo. Prezzo fisso, NON moltiplicato.',degNone:'Nessuno',degA:'Cat. A — Utilitarie',degB:'Cat. B — Berlina media',degC:'Cat. C — SUV / Monovolume',panelsTitle:'Pannelli — bolli e lavorazione',panelsSub:'Pannelli preimpostati su DSP. Modifica solo se serve DAP, CP o ALU.',totalLbl:'Totale preventivo (IVA esclusa)',save:'Salva pratica',pdfBtn:'Scarica PDF',resetBtn:'Reset',forfaitTitle:'Forfait',famount:'Importo totale (€)',fref:'Riferimento',ftotal:'Totale forfait',vehicles:'Archivio veicoli',search:'Cerca',ftype:'Tipo',frep:'Riparazione',fbill:'Pagamento',thCli:'Cliente',thVeh:'Veicolo',thPlate:'Targa',thType:'Tipo',thRep:'Rip.',thPay:'Pag.',thTot:'Totale',assicTag:'Assicurativo',forfaitTag:'Forfait',created:'Preventivato',repaired:'Riparata',billNone:'Non fatt.',billInv:'Fatturata',billPaid:'Saldata',notAvail:'—',monthly:'Fatturato mensile',recent:'Ultime pratiche',kTotal:'Pratiche totali',kCashed:'Incassato',kPending:'In attesa',kRep:'Riparate',kSeason:'Totale stagione',kToRepair:'Auto preventivate da riparare',kToBill:'Auto riparate da fatturare',kBilled:'Auto riparate da incassare',kPaid:'Auto riparate e incassate',kRepairedTot:'Auto riparate totali',emailBtn:'Invia email',emailP:'Invia email',dashFiscal:'Anno Fiscale',dashCamp:'Ciclo Lavorativo',dashYr:'Anno fiscale',dashCampSel:'Ciclo selezionato',addCli:'Aggiungi cliente',priv:'Privato',biz:'Azienda',cfname:'Nome *',clname:'Cognome *',cphone:'Telefono *',cemail:'Email',ccap:'CAP',ccity:'Città',cnotes:'Note',cco:'Ragione sociale *',ccontact:'Referente',cphone2:'Telefono *',cemail2:'Email',cvat:'P.IVA / CF',caddr:'Indirizzo',ccap2:'CAP',ccity2:'Città',ccountry2:'Paese',cnotes2:'Note',saveCli:'Salva cliente',clientbook:'Rubrica',noCli:'Nessun cliente.',companyData:'Dati aziendali',scompany:'Ragione sociale',stech:'Nome tecnico',sphone:'Telefono',svat:'P.IVA',saddr:'Indirizzo',scity:'Città',scountry:'Nazione',sfooter:'Footer PDF',coeffTitle:'Coefficiente moltiplicatore',coeffSub:'Moltiplica il prezzo matrice. Lo smontaggio NON viene moltiplicato.',coeffDirect:'Valore diretto:',tariffTitle:'Tariffario matrice bolli',tariffSub:'DSP e DAP stesso prezzo. ALU cofano ant. usa colonna ALU.',bolliRange:'Bolli',sans:'Senza cofano',avec:'Con cofano',aluCol:'Con cofano ALU',deg2:'Smontaggio — tariffe',deg2sub:'Prezzi fissi. NON moltiplicati.',degASet:'Cat. A — utilitarie',degBSet:'Cat. B — berlina media',degCSet:'Cat. C — SUV / Monovolume',campTitle:'Cicli Lavorativi annuali',campSub:'Crea e gestisci i cicli di lavoro legati alle grandinate.',campName:'Nome ciclo',campStart:'Data inizio',campEnd:'Data fine (opzionale)',campAdd:'+ Aggiungi ciclo',prefs:'Preferenze',uilang:'Lingua interfaccia',pdflang:'Lingua preventivi',theme:'Tema',themeLight:'Chiaro',themeDark:'Scuro',saveSet:'Salva impostazioni',clearAll:'Cancella tutto',repStatus:'Stato riparazione',billStatus:'Stato pagamento',panelDetail:'Pannelli',editP:'Modifica',delP:'Elimina',dlPdf:'Scarica PDF',confirmDelP:'Eliminare questa pratica?',confirmDelC:'Eliminare questo cliente?',confirmClear:'Eliminare tutti i dati?',editNotice:'⚠ Veicolo già presente — stai modificando la pratica esistente.',savedOk:'Pratica salvata!',cliSaved:'Cliente salvato!',setsSaved:'Impostazioni salvate!',dataCleared:'Dati eliminati.',errReq:'Campo obbligatorio.',errPlate:'Formato targa non valido.',errVin:'VIN: 17 caratteri alfanumerici.',errPlateDup:'Targa non valida o già presente.',errVinDup:'VIN non valido o già presente.',errPhone:'Formato telefono non valido.',noPlateVin:'Inserisci targa o VIN.',noPractices:'Nessuna pratica trovata.',colSans:'Senza cofano',colAvec:'Con cofano',colAlu:'Con cofano ALU',use:'Usa',months:['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'],pdfTitle:'Preventivo',pdfClient:'Cliente',pdfVeh:'Veicolo',pdfType:'Tipo',pdfAssic:'Assicurativo',pdfForfait:'Forfait',pdfDate:'Data',pdfPanel:'Pannello',pdfBolli:'Bolli',pdfBolliWord:'bolli',pdfWork:'Lavorazione',pdfAmt:'Importo',pdfTotal:'Totale (IVA esclusa)',pdfNotes:'Note',pdfSign:'Firma e timbro cliente',pdfInsurance:'Assicurazione',pdfNone:'Nessun pannello con danni.',pdfNoNotes:'Nessuna nota.',dismantling:'Smontaggio'},
 EN:{navPrev:'Quote',navAuto:'Vehicles',navDash:'Dashboard',navCli:'Clients',navSet:'Settings',brandSub:'Quotes · Vehicles · Dashboard',newQuote:'New quote',lookupSub:'Enter plate and/or VIN to find or create a case.',lplate:'Plate',lvin:'VIN / Chassis',qtype:'Quote type',mAssic:'Insurance',mForfait:'Fixed price',pdata:'Case data',qdate:'Quote date *',rdate:'Repair date (optional)',cust:'Client / Company',brand:'Brand',model:'Model',color:'Color',notes:'Notes',plate:'Plate',vin:'VIN',insurance:'Insurance',degTitle:'Removal',degSub:'Vehicle category. Fixed price, NOT multiplied.',degNone:'None',degA:'Cat. A — Small cars',degB:'Cat. B — Mid-size',degC:'Cat. C — SUV / Minivan',panelsTitle:'Panels — dents and repair',panelsSub:'Panels preset to DSP. Change only if DAP, CP or ALU applies.',totalLbl:'Total quote (excl. VAT)',save:'Save case',pdfBtn:'Download PDF',resetBtn:'Reset',forfaitTitle:'Fixed price',famount:'Total amount (€)',fref:'Reference',ftotal:'Fixed price total',vehicles:'Vehicle archive',search:'Search',ftype:'Type',frep:'Repair',fbill:'Payment',thCli:'Client',thVeh:'Vehicle',thPlate:'Plate',thType:'Type',thRep:'Rep.',thPay:'Pay.',thTot:'Total',assicTag:'Insurance',forfaitTag:'Fixed',created:'Quoted',repaired:'Repaired',billNone:'Not inv.',billInv:'Invoiced',billPaid:'Paid',notAvail:'—',monthly:'Monthly revenue',recent:'Recent cases',kTotal:'Total cases',kCashed:'Collected',kPending:'Pending',kRep:'Repaired',addCli:'Add client',priv:'Private',biz:'Company',cfname:'First name *',clname:'Last name *',cphone:'Phone *',cemail:'Email',ccity:'City',cnotes:'Notes',cco:'Company name *',ccontact:'Contact',cphone2:'Phone *',cemail2:'Email',cvat:'VAT / Tax ID',caddr:'Address',ccity2:'City',ccountry2:'Country',cnotes2:'Notes',saveCli:'Save client',clientbook:'Address book',noCli:'No clients.',companyData:'Company data',scompany:'Company name',stech:'Technician',sphone:'Phone',svat:'VAT',saddr:'Address',scity:'City',scountry:'Country',sfooter:'PDF footer',coeffTitle:'Multiplier coefficient',coeffSub:'Multiplies the matrix price. Removal NOT multiplied.',coeffDirect:'Direct value:',tariffTitle:'Dent matrix price list',tariffSub:'DSP and DAP same price. ALU front hood uses ALU column.',bolliRange:'Dents',sans:'Without hood',avec:'With hood',aluCol:'With hood ALU',deg2:'Removal — rates',deg2sub:'Fixed prices. NOT multiplied.',degASet:'Cat. A — small cars',degBSet:'Cat. B — mid-size',degCSet:'Cat. C — SUV / Minivan',prefs:'Preferences',uilang:'Interface language',pdflang:'Quote language',theme:'Theme',themeLight:'Light',themeDark:'Dark',saveSet:'Save settings',clearAll:'Clear all',repStatus:'Repair status',billStatus:'Payment status',panelDetail:'Panels',editP:'Edit',delP:'Delete',dlPdf:'Download PDF',confirmDelP:'Delete this case?',confirmDelC:'Delete this client?',confirmClear:'Delete all data?',editNotice:'⚠ Vehicle found — editing existing case.',savedOk:'Case saved!',cliSaved:'Client saved!',setsSaved:'Settings saved!',dataCleared:'Data cleared.',errReq:'Required field.',errPlate:'Invalid plate format.',errVin:'VIN: 17 alphanumeric characters.',errPlateDup:'Invalid or duplicate plate.',errVinDup:'Invalid or duplicate VIN.',errPhone:'Invalid phone.',noPlateVin:'Enter plate or VIN.',noPractices:'No cases found.',colSans:'Without hood',colAvec:'With hood',colAlu:'With hood ALU',use:'Use',months:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],pdfTitle:'Quote',pdfClient:'Client',pdfVeh:'Vehicle',pdfType:'Type',pdfAssic:'Insurance',pdfForfait:'Fixed price',pdfDate:'Date',pdfPanel:'Panel',pdfBolli:'Dents',pdfBolliWord:'dents',pdfWork:'Repair',pdfAmt:'Amount',pdfTotal:'Total (excl. VAT)',pdfNotes:'Notes',pdfSign:'Customer signature & stamp',pdfInsurance:'Insurance',pdfNone:'No damaged panels.',pdfNoNotes:'No notes.',dismantling:'Removal'},
 FR:{navPrev:'Devis',navAuto:'Véhicules',navDash:'Dashboard',navCli:'Clients',navSet:'Paramètres',brandSub:'Devis · Véhicules · Dashboard',newQuote:'Nouveau devis',lookupSub:'Entrez plaque et/ou VIN pour trouver ou créer un dossier.',lplate:'Plaque',lvin:'VIN / Châssis',qtype:'Type de devis',mAssic:'Assurance',mForfait:'Forfait',pdata:'Données dossier',qdate:'Date du devis *',rdate:'Date réparation (optionnel)',cust:'Client / Entreprise',brand:'Marque',model:'Modèle',color:'Couleur',notes:'Notes',plate:'Plaque',vin:'VIN',insurance:'Assurance',degTitle:'Dégarnissage',degSub:'Catégorie du véhicule. Prix fixe, NON multiplié.',degNone:'Aucun',degA:'Cat. A — Citadines',degB:'Cat. B — Berlines',degC:'Cat. C — SUV / Monospace',panelsTitle:'Panneaux — impacts et réparation',panelsSub:'Panneaux préréglés sur DSP. Modifier si DAP, CP ou ALU.',totalLbl:'Total devis (HT)',save:'Enregistrer',pdfBtn:'Télécharger PDF',resetBtn:'Réinitialiser',forfaitTitle:'Forfait',famount:'Montant total (€)',fref:'Référence',ftotal:'Total forfait',vehicles:'Archive véhicules',search:'Rechercher',ftype:'Type',frep:'Réparation',fbill:'Paiement',thCli:'Client',thVeh:'Véhicule',thPlate:'Plaque',thType:'Type',thRep:'Rép.',thPay:'Paiement',thTot:'Total',assicTag:'Assurance',forfaitTag:'Forfait',created:'Devis fait',repaired:'Réparé',billNone:'Non fact.',billInv:'Facturé',billPaid:'Réglé',notAvail:'—',monthly:"CA mensuel",recent:'Derniers dossiers',kTotal:'Dossiers totaux',kCashed:'Encaissé',kPending:'En attente',kRep:'Réparés',addCli:'Ajouter un client',priv:'Particulier',biz:'Entreprise',cfname:'Prénom *',clname:'Nom *',cphone:'Téléphone *',cemail:'Email',ccity:'Ville',cnotes:'Notes',cco:'Raison sociale *',ccontact:'Contact',cphone2:'Téléphone *',cemail2:'Email',cvat:'TVA / SIRET',caddr:'Adresse',ccity2:'Ville',ccountry2:'Pays',cnotes2:'Notes',saveCli:'Enregistrer le client',clientbook:'Répertoire',noCli:'Aucun client.',companyData:'Données société',scompany:'Raison sociale',stech:'Technicien',sphone:'Téléphone',svat:'TVA',saddr:'Adresse',scity:'Ville',scountry:'Pays',sfooter:'Pied de page PDF',coeffTitle:'Coefficient multiplicateur',coeffSub:'Multiplie le prix matrice. Dégarnissage NON multiplié.',coeffDirect:'Valeur directe :',tariffTitle:'Tarif matrice impacts',tariffSub:'DSP et DAP même prix. ALU capot avant = colonne ALU.',bolliRange:'Impacts',sans:'Sans capot',avec:'Avec capot',aluCol:'Avec capot ALU',deg2:'Dégarnissage — tarifs',deg2sub:'Prix fixes. NON multipliés.',degASet:'Cat. A — citadines',degBSet:'Cat. B — berline',degCSet:'Cat. C — SUV / Monospace',prefs:'Préférences',uilang:'Langue interface',pdflang:'Langue devis',theme:'Thème',themeLight:'Clair',themeDark:'Sombre',saveSet:'Enregistrer',clearAll:'Effacer tout',repStatus:'État réparation',billStatus:'État paiement',panelDetail:'Panneaux',editP:'Modifier',delP:'Supprimer',dlPdf:'Télécharger PDF',confirmDelP:'Supprimer ce dossier ?',confirmDelC:'Supprimer ce client ?',confirmClear:'Supprimer toutes les données ?',editNotice:'⚠ Véhicule trouvé — modification du dossier.',savedOk:'Dossier enregistré !',cliSaved:'Client enregistré !',setsSaved:'Paramètres enregistrés !',dataCleared:'Données effacées.',errReq:'Champ obligatoire.',errPlate:'Format plaque invalide.',errVin:'VIN : 17 caractères alphanumériques.',errPlateDup:'Plaque invalide ou déjà existante.',errVinDup:'VIN invalide ou déjà existant.',errPhone:'Téléphone invalide.',noPlateVin:'Entrez plaque ou VIN.',noPractices:'Aucun dossier.',colSans:'Sans capot',colAvec:'Avec capot',colAlu:'Avec capot ALU',use:'Utiliser',months:['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'],pdfTitle:'Devis',pdfClient:'Client',pdfVeh:'Véhicule',pdfType:'Type',pdfAssic:'Assurance',pdfForfait:'Forfait',pdfDate:'Date',pdfPanel:'Panneau',pdfBolli:'Impacts',pdfBolliWord:'impacts',pdfWork:'Traitement',pdfAmt:'Montant',pdfTotal:'Total (HT)',pdfNotes:'Notes',pdfSign:'Signature et cachet client',pdfInsurance:'Assurance',pdfNone:'Aucun dommage.',pdfNoNotes:'Aucune note.',dismantling:'Dégarnissage'},
 ES:{navPrev:'Presupuesto',navAuto:'Vehículos',navDash:'Dashboard',navCli:'Clientes',navSet:'Ajustes',brandSub:'Presupuestos · Vehículos · Dashboard',newQuote:'Nuevo presupuesto',lookupSub:'Introduce matrícula y/o VIN.',lplate:'Matrícula',lvin:'VIN / Bastidor',qtype:'Tipo',mAssic:'Seguro',mForfait:'Precio fijo',pdata:'Datos',qdate:'Fecha *',rdate:'Fecha reparación (opcional)',cust:'Cliente',brand:'Marca',model:'Modelo',color:'Color',notes:'Notas',plate:'Matrícula',vin:'VIN',insurance:'Seguro',degTitle:'Desmontaje',degSub:'Categoría. Precio fijo, NO multiplicado.',degNone:'Ninguno',degA:'Cat. A',degB:'Cat. B',degC:'Cat. C — SUV',panelsTitle:'Paneles',panelsSub:'Preconfigurados en DSP.',totalLbl:'Total (sin IVA)',save:'Guardar',pdfBtn:'Descargar PDF',resetBtn:'Resetear',forfaitTitle:'Precio fijo',famount:'Importe (€)',fref:'Referencia',ftotal:'Total',vehicles:'Vehículos',search:'Buscar',ftype:'Tipo',frep:'Reparación',fbill:'Pago',thCli:'Cliente',thVeh:'Vehículo',thPlate:'Matrícula',thType:'Tipo',thRep:'Rep.',thPay:'Pago',thTot:'Total',assicTag:'Seguro',forfaitTag:'Fijo',created:'Presupuestado',repaired:'Reparado',billNone:'Sin fact.',billInv:'Facturado',billPaid:'Cobrado',notAvail:'—',monthly:'Facturación mensual',recent:'Últimos',kTotal:'Total',kCashed:'Cobrado',kPending:'Pendiente',kRep:'Reparados',addCli:'Añadir cliente',priv:'Particular',biz:'Empresa',cfname:'Nombre *',clname:'Apellido *',cphone:'Teléfono *',cemail:'Email',ccity:'Ciudad',cnotes:'Notas',cco:'Razón social *',ccontact:'Contacto',cphone2:'Teléfono *',cemail2:'Email',cvat:'CIF/NIF',caddr:'Dirección',ccity2:'Ciudad',ccountry2:'País',cnotes2:'Notas',saveCli:'Guardar',clientbook:'Agenda',noCli:'Sin clientes.',companyData:'Empresa',scompany:'Razón social',stech:'Técnico',sphone:'Teléfono',svat:'CIF',saddr:'Dirección',scity:'Ciudad',scountry:'País',sfooter:'Pie PDF',coeffTitle:'Coeficiente',coeffSub:'Multiplica el precio. Desmontaje NO multiplicado.',coeffDirect:'Valor:',tariffTitle:'Tarifa',tariffSub:'DSP y DAP mismo precio.',bolliRange:'Abolladuras',sans:'Sin capó',avec:'Con capó',aluCol:'Con capó ALU',deg2:'Desmontaje',deg2sub:'Precios fijos.',degASet:'Cat. A',degBSet:'Cat. B',degCSet:'Cat. C — SUV',prefs:'Preferencias',uilang:'Idioma interfaz',pdflang:'Idioma presupuestos',theme:'Tema',themeLight:'Claro',themeDark:'Oscuro',saveSet:'Guardar',clearAll:'Borrar todo',repStatus:'Estado reparación',billStatus:'Estado pago',panelDetail:'Paneles',editP:'Editar',delP:'Eliminar',dlPdf:'Descargar PDF',confirmDelP:'¿Eliminar?',confirmDelC:'¿Eliminar cliente?',confirmClear:'¿Eliminar todo?',editNotice:'⚠ Vehículo encontrado.',savedOk:'¡Guardado!',cliSaved:'¡Cliente guardado!',setsSaved:'¡Guardado!',dataCleared:'Eliminado.',errReq:'Obligatorio.',errPlate:'Formato inválido.',errVin:'VIN: 17 caracteres.',errPlateDup:'Duplicada.',errVinDup:'VIN duplicado.',errPhone:'Teléfono inválido.',noPlateVin:'Introduce matrícula o VIN.',noPractices:'Sin resultados.',colSans:'Sin capó',colAvec:'Con capó',colAlu:'Con capó ALU',use:'Usar',months:['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],pdfTitle:'Presupuesto',pdfClient:'Cliente',pdfVeh:'Vehículo',pdfType:'Tipo',pdfAssic:'Seguro',pdfForfait:'Precio fijo',pdfDate:'Fecha',pdfPanel:'Panel',pdfBolli:'Abolladuras',pdfBolliWord:'abolladuras',pdfWork:'Trabajo',pdfAmt:'Importe',pdfTotal:'Total (sin IVA)',pdfNotes:'Notas',pdfSign:'Firma y sello cliente',pdfInsurance:'Seguro',pdfNone:'Sin daños.',pdfNoNotes:'Sin notas.',dismantling:'Desmontaje'},
@@ -522,10 +546,10 @@ DE:{navPrev:'Angebot',navAuto:'Fahrzeuge',navDash:'Dashboard',navCli:'Kunden',na
 ['EN','FR','ES','DE'].forEach(L=>{
   if(!DICT[L])return;
   const ext={
-    EN:{ccap:'ZIP',ccap2:'ZIP',kSeason:'Season total',dashFiscal:'Fiscal Year',dashCamp:'Work Cycle',dashYr:'Fiscal year',dashCampSel:'Selected cycle',pcamp:'Work Cycle',campTitle:'Yearly Work Cycles',campSub:'Manage work cycles tied to hailstorms.',campName:'Cycle name',campStart:'Start date',campEnd:'End date (optional)',campAdd:'+ Add cycle',lblIns:'Insurance',kToRepair:'Quoted cars to repair',kToBill:'Repaired cars to invoice',kBilled:'Repaired cars to collect',kPaid:'Repaired & collected cars',emailBtn:'Send email',emailP:'Send email'},
-    FR:{ccap:'CP',ccap2:'CP',kSeason:'Total saison',dashFiscal:'Année fiscale',dashCamp:'Cycle de travail',dashYr:'Année fiscale',dashCampSel:'Cycle sélectionné',pcamp:'Cycle de travail',campTitle:'Cycles de travail annuels',campSub:'Gérez les cycles liés aux grêles.',campName:'Nom du cycle',campStart:'Date début',campEnd:'Date fin (optionnel)',campAdd:'+ Ajouter cycle',lblIns:'Assurance',kToRepair:'Voitures à réparer',kToBill:'Voitures réparées à facturer',kBilled:'Voitures réparées à encaisser',kPaid:'Voitures réparées et encaissées',emailBtn:'Envoyer email',emailP:'Envoyer email'},
-    ES:{ccap:'CP',ccap2:'CP',kSeason:'Total temporada',dashFiscal:'Año fiscal',dashCamp:'Ciclo de trabajo',dashYr:'Año fiscal',dashCampSel:'Ciclo seleccionado',pcamp:'Ciclo de trabajo',campTitle:'Ciclos de trabajo anuales',campSub:'Gestiona ciclos asociados a granizadas.',campName:'Nombre del ciclo',campStart:'Fecha inicio',campEnd:'Fecha fin (opcional)',campAdd:'+ Añadir ciclo',lblIns:'Seguro',kToRepair:'Coches presupuestados por reparar',kToBill:'Coches reparados por facturar',kBilled:'Coches reparados por cobrar',kPaid:'Coches reparados y cobrados',emailBtn:'Enviar email',emailP:'Enviar email'},
-    DE:{ccap:'PLZ',ccap2:'PLZ',kSeason:'Saison gesamt',dashFiscal:'Geschäftsjahr',dashCamp:'Arbeitszyklus',dashYr:'Geschäftsjahr',dashCampSel:'Ausgewählter Zyklus',pcamp:'Arbeitszyklus',campTitle:'Jährliche Arbeitszyklen',campSub:'Verwalte Zyklen für Hagelschäden.',campName:'Zyklusname',campStart:'Startdatum',campEnd:'Enddatum (optional)',campAdd:'+ Zyklus hinzufügen',lblIns:'Versicherung',kToRepair:'Angebotene Fahrzeuge zur Reparatur',kToBill:'Reparierte Fahrzeuge zur Fakturierung',kBilled:'Reparierte Fahrzeuge zum Einzug',kPaid:'Reparierte und bezahlte Fahrzeuge',emailBtn:'E-Mail senden',emailP:'E-Mail senden'}
+    EN:{ccap:'ZIP',ccap2:'ZIP',kSeason:'Season total',dashFiscal:'Fiscal Year',dashCamp:'Work Cycle',dashYr:'Fiscal year',dashCampSel:'Selected cycle',pcamp:'Work Cycle',campTitle:'Yearly Work Cycles',campSub:'Manage work cycles tied to hailstorms.',campName:'Cycle name',campStart:'Start date',campEnd:'End date (optional)',campAdd:'+ Add cycle',lblIns:'Insurance',kToRepair:'Quoted cars to repair',kToBill:'Repaired cars to invoice',kBilled:'Repaired cars to collect',kPaid:'Repaired & collected cars',kRepairedTot:'Total repaired cars',emailBtn:'Send email',emailP:'Send email'},
+    FR:{ccap:'CP',ccap2:'CP',kSeason:'Total saison',dashFiscal:'Année fiscale',dashCamp:'Cycle de travail',dashYr:'Année fiscale',dashCampSel:'Cycle sélectionné',pcamp:'Cycle de travail',campTitle:'Cycles de travail annuels',campSub:'Gérez les cycles liés aux grêles.',campName:'Nom du cycle',campStart:'Date début',campEnd:'Date fin (optionnel)',campAdd:'+ Ajouter cycle',lblIns:'Assurance',kToRepair:'Voitures à réparer',kToBill:'Voitures réparées à facturer',kBilled:'Voitures réparées à encaisser',kPaid:'Voitures réparées et encaissées',kRepairedTot:'Total voitures réparées',emailBtn:'Envoyer email',emailP:'Envoyer email'},
+    ES:{ccap:'CP',ccap2:'CP',kSeason:'Total temporada',dashFiscal:'Año fiscal',dashCamp:'Ciclo de trabajo',dashYr:'Año fiscal',dashCampSel:'Ciclo seleccionado',pcamp:'Ciclo de trabajo',campTitle:'Ciclos de trabajo anuales',campSub:'Gestiona ciclos asociados a granizadas.',campName:'Nombre del ciclo',campStart:'Fecha inicio',campEnd:'Fecha fin (opcional)',campAdd:'+ Añadir ciclo',lblIns:'Seguro',kToRepair:'Coches presupuestados por reparar',kToBill:'Coches reparados por facturar',kBilled:'Coches reparados por cobrar',kPaid:'Coches reparados y cobrados',kRepairedTot:'Total coches reparados',emailBtn:'Enviar email',emailP:'Enviar email'},
+    DE:{ccap:'PLZ',ccap2:'PLZ',kSeason:'Saison gesamt',dashFiscal:'Geschäftsjahr',dashCamp:'Arbeitszyklus',dashYr:'Geschäftsjahr',dashCampSel:'Ausgewählter Zyklus',pcamp:'Arbeitszyklus',campTitle:'Jährliche Arbeitszyklen',campSub:'Verwalte Zyklen für Hagelschäden.',campName:'Zyklusname',campStart:'Startdatum',campEnd:'Enddatum (optional)',campAdd:'+ Zyklus hinzufügen',lblIns:'Versicherung',kToRepair:'Angebotene Fahrzeuge zur Reparatur',kToBill:'Reparierte Fahrzeuge zur Fakturierung',kBilled:'Reparierte Fahrzeuge zum Einzug',kPaid:'Reparierte und bezahlte Fahrzeuge',kRepairedTot:'Reparierte Fahrzeuge ges.',emailBtn:'E-Mail senden',emailP:'E-Mail senden'}
   };
   Object.assign(DICT[L],ext[L]);
 });
@@ -536,7 +560,7 @@ const SK={p:'pdrstudio_p',c:'pdrstudio_c',s:'pdrstudio_s',mx:'pdrstudio_mx',dg:'
 let practices=[], clients=[], campaigns=[], customInsurances=[];
 let settings={company:'',tech:'',email:'',phone:'',vat:'',addr:'',cap:'',city:'',country:'',footer:'',uiLang:'IT',pdfLang:'IT',theme:'dark',coeff:1};
 let matrix=DEFAULT_MATRIX.map(r=>[...r]), deg={...DEFAULT_DEG};
-let PS={}, curMode='assicurativo', degCat='none', editId=null, activeId=null, cliType='azienda', dashView='fiscal', activeCampaignId=null, manualTotal=null;
+let PS={}, curMode='assicurativo', degCat='none', editId=null, editClientId=null, activeId=null, cliType='azienda', dashView='fiscal', activeCampaignId=null, manualTotal=null;
 
 const uid=()=>crypto.randomUUID();
 const now=()=>new Date().toISOString();
@@ -633,7 +657,11 @@ function goTo(target){
   document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===target));
   if(target==='v-dash')renderDash();
   if(target==='v-auto')renderTable();
-  if(target==='v-cli'){setCliType('azienda');renderClients();}
+  if(target==='v-cli'){if(!editClientId)setCliType('azienda');renderClients();}
+  else{
+    // se sto uscendo dalla rubrica con un edit in corso, annullo
+    if(editClientId){editClientId=null;clearClientForm();const en=g('cli-edit-notice');if(en)en.classList.add('hidden');const bs=g('btn-savecli');if(bs)bs.textContent=T('saveCli')||'Salva cliente';}
+  }
   if(target==='v-set')fillSettings();
 }
 g('bnav').addEventListener('click',e=>{const b=e.target.closest('.bnav-btn');if(b&&b.dataset.target)goTo(b.dataset.target);});
@@ -664,10 +692,11 @@ function calcAll(){
   if(cp&&cp.type==='CP')cpTotal+=cp.cpPrice;
   const degPrice=degCat==='none'?0:(+deg[degCat]||0);
   const cols=[T('colSans'),T('colAvec'),T('colAlu')];
-  let total=matWithCoeff+cpTotal+degPrice;
-  // arrotondamento al 5€ superiore (solo del totale finale calcolato)
-  const rounded=Math.ceil(total/5)*5;
-  return{matPrice,matWithCoeff,cpTotal,degPrice,bolli:b,coeff,col:cols[matCol()],total:rounded,rawTotal:total,custom:cp};
+  // arrotondamento al 5€ superiore SOLO sulla riparazione (matWithCoeff + cpTotal)
+  const repairRaw=matWithCoeff+cpTotal;
+  const repairRounded=Math.ceil(repairRaw/5)*5;
+  const total=repairRounded+degPrice;
+  return{matPrice,matWithCoeff:repairRounded-cpTotal>=0?repairRounded-cpTotal:matWithCoeff,cpTotal,degPrice,bolli:b,coeff,col:cols[matCol()],total,rawTotal:repairRaw+degPrice,repairRounded,custom:cp};
 }
 function refreshTotal(){
   const r=calcAll();
@@ -1253,24 +1282,43 @@ function renderDash(){
     filtered=c?practices.filter(p=>pInCampaign(p,c)):[];
     label=c?c.name:'—';
   }
-  // KPI - V9: 4 categorie con count + importo
-  const toRepair=filtered.filter(p=>p.repairStatus!=='Riparata'); // preventivata, ancora da riparare
+  // KPI: ognuno mostra IL NETTO PER ME (applicando quota cliente)
+  const toRepair=filtered.filter(p=>p.repairStatus!=='Riparata');
   const toBill=filtered.filter(p=>p.repairStatus==='Riparata'&&(!p.billingStatus||p.billingStatus===''||p.billingStatus==='Non fatt.'||p.billingStatus==='Non fatturata'));
   const billed=filtered.filter(p=>p.repairStatus==='Riparata'&&p.billingStatus==='Fatturata');
   const paid=filtered.filter(p=>p.repairStatus==='Riparata'&&p.billingStatus==='Saldata');
-  const sum=arr=>arr.reduce((a,p)=>a+(+p.totalAmount||0),0);
+  // tutte le riparate (somma di toBill + billed + paid)
+  const repaired=filtered.filter(p=>p.repairStatus==='Riparata');
+  // calcola la quota netta per me per una pratica
+  function myShare(p){
+    const cli=clients.find(c=>c.name===p.customerName);
+    const tot=+p.totalAmount||0;
+    if(!cli||cli.share===undefined||cli.share===null)return tot;
+    const sharePct=+cli.share/100;
+    if(cli.shareOn==='repair'){
+      // % solo su riparazione, smontaggio interamente a me
+      const cd=p.calcDetail;
+      const degP=cd?(+cd.degPrice||0):0;
+      const repairP=Math.max(0,tot-degP);
+      return repairP*sharePct+degP;
+    }
+    // default: % su tutto il totale
+    return tot*sharePct;
+  }
+  const sumMine=arr=>arr.reduce((a,p)=>a+myShare(p),0);
   g('kpi-grid').innerHTML=[
-    {l:t.kToRepair||'Auto preventivate da riparare',n:toRepair.length,v:sum(toRepair)},
-    {l:t.kToBill||'Auto riparate da fatturare',n:toBill.length,v:sum(toBill)},
-    {l:t.kBilled||'Auto riparate da incassare',n:billed.length,v:sum(billed)},
-    {l:t.kPaid||'Auto riparate e incassate',n:paid.length,v:sum(paid)}
-  ].map(k=>'<div class="kpi-card"><div class="kpi-label">'+k.l+'</div><div class="kpi-value">'+k.n+'</div><div class="kpi-sub">'+money(k.v)+'</div></div>').join('');
+    {l:t.kToRepair||'Auto preventivate da riparare',n:toRepair.length,v:sumMine(toRepair)},
+    {l:t.kToBill||'Auto riparate da fatturare',n:toBill.length,v:sumMine(toBill)},
+    {l:t.kBilled||'Auto riparate da incassare',n:billed.length,v:sumMine(billed)},
+    {l:t.kPaid||'Auto riparate e incassate',n:paid.length,v:sumMine(paid)},
+    {l:t.kRepairedTot||'Auto riparate totali',n:repaired.length,v:sumMine(repaired),highlight:true}
+  ].map(k=>'<div class="kpi-card'+(k.highlight?' kpi-highlight':'')+'"><div class="kpi-label">'+k.l+'</div><div class="kpi-value">'+k.n+'</div><div class="kpi-sub">'+money(k.v)+'</div></div>').join('');
   g('dash-yr').textContent=label;
   // bar chart mensile
   if(dashView==='fiscal'){
     const yr=+gv('sel-dashyr')||new Date().getFullYear();
     const byM=Array(12).fill(0);
-    practices.filter(p=>pInFiscalYear(p,yr)).forEach(p=>{const d=new Date(p.quoteDate||p.createdAt);byM[d.getMonth()]+=(+p.totalAmount||0);});
+    practices.filter(p=>pInFiscalYear(p,yr)).forEach(p=>{const d=new Date(p.quoteDate||p.createdAt);byM[d.getMonth()]+=myShare(p);});
     const maxV=Math.max(...byM,1);const MN=t.months;
     g('bar-chart').innerHTML=byM.map((v,i)=>`<div class="bar-col" title="${MN[i]}: ${money(v)}"><span class="bar-vlabel">${shortMoney(v)}</span><div class="bar-inner" style="height:${Math.round((v/maxV)*90)}px"></div><span class="bar-mlabel">${MN[i]}</span></div>`).join('');
   }else{
@@ -1281,7 +1329,7 @@ function renderDash(){
       const months=[];const s=new Date(c.start);const e=c.end?new Date(c.end):new Date();
       const cur=new Date(s.getFullYear(),s.getMonth(),1);
       while(cur<=e){months.push({y:cur.getFullYear(),m:cur.getMonth(),v:0});cur.setMonth(cur.getMonth()+1);}
-      filtered.forEach(p=>{const d=new Date(p.quoteDate||p.createdAt);const idx=months.findIndex(x=>x.y===d.getFullYear()&&x.m===d.getMonth());if(idx>=0)months[idx].v+=(+p.totalAmount||0);});
+      filtered.forEach(p=>{const d=new Date(p.quoteDate||p.createdAt);const idx=months.findIndex(x=>x.y===d.getFullYear()&&x.m===d.getMonth());if(idx>=0)months[idx].v+=myShare(p);});
       const maxV=Math.max(...months.map(x=>x.v),1);const MN=t.months;
       g('bar-chart').innerHTML=months.map(x=>`<div class="bar-col" title="${MN[x.m]} ${x.y}: ${money(x.v)}"><span class="bar-vlabel">${shortMoney(x.v)}</span><div class="bar-inner" style="height:${Math.round((x.v/maxV)*90)}px"></div><span class="bar-mlabel">${MN[x.m]}/${String(x.y).slice(2)}</span></div>`).join('');
     }else{
@@ -1294,6 +1342,64 @@ function renderDash(){
 
 /* ═══════════════ CLIENTI ═══════════════ */
 function setCliType(t){cliType=t;g('ctype-priv').classList.toggle('active',t==='privato');g('ctype-biz').classList.toggle('active',t==='azienda');g('cli-priv-form').classList.toggle('hidden',t!=='privato');g('cli-biz-form').classList.toggle('hidden',t!=='azienda');}
+
+// Svuota tutti i campi del form cliente
+function clearClientForm(){
+  ['inp-cfname','inp-clname','inp-cphone','inp-cemail','inp-caddr_p','inp-ccap_p','inp-ccity','inp-cnotes','inp-cco','inp-ccontact','inp-cphone2','inp-cemail2','inp-cvat','inp-caddr','inp-ccap2','inp-ccity2','inp-ccountry2','inp-cnotes2','inp-cshare'].forEach(id=>{if(g(id))g(id).value='';});
+  if(g('inp-cshare-on'))g('inp-cshare-on').value='total';
+}
+
+// Precompila il form clienti con i dati di un cliente esistente
+function fillClientForm(c){
+  if(c.type==='privato'){
+    setCliType('privato');
+    // splitto il nome in nome+cognome (best-effort: prima parola=nome, resto=cognome)
+    const parts=(c.name||'').trim().split(' ');
+    g('inp-cfname').value=parts[0]||'';
+    g('inp-clname').value=parts.slice(1).join(' ')||'';
+    g('inp-cphone').value=c.phone||'';
+    g('inp-cemail').value=c.email||'';
+    g('inp-caddr_p').value=c.addr||'';
+    g('inp-ccap_p').value=c.cap||'';
+    g('inp-ccity').value=c.city||'';
+    g('inp-cnotes').value=c.notes||'';
+  }else{
+    setCliType('azienda');
+    g('inp-cco').value=c.name||'';
+    g('inp-ccontact').value=c.contact||'';
+    g('inp-cphone2').value=c.phone||'';
+    g('inp-cemail2').value=c.email||'';
+    g('inp-cvat').value=c.vat||'';
+    g('inp-caddr').value=c.addr||'';
+    g('inp-ccap2').value=c.cap||'';
+    g('inp-ccity2').value=c.city||'';
+    g('inp-ccountry2').value=c.country||'';
+    g('inp-cnotes2').value=c.notes||'';
+  }
+  if(g('inp-cshare'))g('inp-cshare').value=(c.share!==undefined&&c.share!==null)?c.share:'';
+  if(g('inp-cshare-on'))g('inp-cshare-on').value=c.shareOn||'total';
+}
+
+function startEditClient(c){
+  editClientId=c.id;
+  fillClientForm(c);
+  g('cli-edit-notice').classList.remove('hidden');
+  g('cli-edit-name').textContent=c.name;
+  g('btn-savecli').textContent='Salva modifiche';
+  // scrollo in alto al form
+  const sec=g('v-cli');if(sec)sec.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function cancelEditClient(){
+  editClientId=null;
+  clearClientForm();
+  setCliType('azienda');
+  g('cli-edit-notice').classList.add('hidden');
+  g('btn-savecli').textContent=T('saveCli')||'Salva cliente';
+}
+
+// listener annulla edit
+const _bcc=g('btn-cli-cancel');if(_bcc)_bcc.addEventListener('click',cancelEditClient);
 g('ctype-priv').addEventListener('click',()=>setCliType('privato'));
 g('ctype-biz').addEventListener('click',()=>setCliType('azienda'));
 function validateClient(){
@@ -1305,13 +1411,35 @@ function validateClient(){
 }
 g('btn-savecli').addEventListener('click',()=>{
   if(!validateClient()){toast(T('errReq'));return;}
+  // leggo quota tecnico (opzionale, default 100% = nessuna ripartizione)
+  const shareInput=gv('inp-cshare').trim();
+  const share=shareInput===''?null:Math.min(100,Math.max(0,+shareInput));
+  const shareOn=gv('inp-cshare-on')||'total';
   let name,rec;
-  if(cliType==='privato'){name=(gv('inp-cfname')+' '+gv('inp-clname')).trim();rec={id:uid(),type:'privato',name,phone:gv('inp-cphone').trim(),email:gv('inp-cemail').trim(),addr:gv('inp-caddr_p').trim(),cap:gv('inp-ccap_p').trim(),city:gv('inp-ccity').trim(),notes:gv('inp-cnotes').trim(),company:'',contact:'',vat:'',country:''};}
-  else{name=gv('inp-cco').trim();rec={id:uid(),type:'azienda',name,company:name,contact:gv('inp-ccontact').trim(),phone:gv('inp-cphone2').trim(),email:gv('inp-cemail2').trim(),vat:gv('inp-cvat').trim(),addr:gv('inp-caddr').trim(),cap:gv('inp-ccap2').trim(),city:gv('inp-ccity2').trim(),country:gv('inp-ccountry2').trim(),notes:gv('inp-cnotes2').trim()};}
-  if(clients.some(c=>c.name.toLowerCase()===name.toLowerCase())){toast(T('errReq'));return;}
-  clients.unshift(rec);save();cloudUpsertClient(rec);
-  ['inp-cfname','inp-clname','inp-cphone','inp-cemail','inp-caddr_p','inp-ccap_p','inp-ccity','inp-cnotes','inp-cco','inp-ccontact','inp-cphone2','inp-cemail2','inp-cvat','inp-caddr','inp-ccap2','inp-ccity2','inp-ccountry2','inp-cnotes2'].forEach(id=>{if(g(id))g(id).value='';});
-  renderClients();toast(T('cliSaved'));
+  // se in modalità edit, mantengo l'id esistente
+  const targetId=editClientId||uid();
+  if(cliType==='privato'){name=(gv('inp-cfname')+' '+gv('inp-clname')).trim();rec={id:targetId,type:'privato',name,phone:gv('inp-cphone').trim(),email:gv('inp-cemail').trim(),addr:gv('inp-caddr_p').trim(),cap:gv('inp-ccap_p').trim(),city:gv('inp-ccity').trim(),notes:gv('inp-cnotes').trim(),company:'',contact:'',vat:'',country:'',share,shareOn};}
+  else{name=gv('inp-cco').trim();rec={id:targetId,type:'azienda',name,company:name,contact:gv('inp-ccontact').trim(),phone:gv('inp-cphone2').trim(),email:gv('inp-cemail2').trim(),vat:gv('inp-cvat').trim(),addr:gv('inp-caddr').trim(),cap:gv('inp-ccap2').trim(),city:gv('inp-ccity2').trim(),country:gv('inp-ccountry2').trim(),notes:gv('inp-cnotes2').trim(),share,shareOn};}
+  // controllo duplicati SOLO se sto creando un nuovo cliente (non in edit)
+  if(!editClientId&&clients.some(c=>c.name.toLowerCase()===name.toLowerCase())){toast('Cliente già esistente');return;}
+  // se in edit con cambio nome, controllo che il nuovo nome non esista in altri clienti
+  if(editClientId&&clients.some(c=>c.id!==editClientId&&c.name.toLowerCase()===name.toLowerCase())){toast('Esiste già un altro cliente con questo nome');return;}
+  if(editClientId){
+    // sostituisco il cliente esistente
+    clients=clients.map(c=>c.id===editClientId?rec:c);
+  }else{
+    // aggiungo nuovo cliente in cima
+    clients.unshift(rec);
+  }
+  save();cloudUpsertClient(rec);
+  // reset stato edit
+  const wasEdit=!!editClientId;
+  editClientId=null;
+  clearClientForm();
+  g('cli-edit-notice').classList.add('hidden');
+  g('btn-savecli').textContent=T('saveCli')||'Salva cliente';
+  renderClients();
+  toast(wasEdit?'Cliente aggiornato':T('cliSaved'));
 });
 function renderClients(){
   const box=g('cli-list');if(!box)return;box.innerHTML='';
@@ -1319,12 +1447,15 @@ function renderClients(){
   clients.forEach(c=>{
     const row=document.createElement('div');row.className='mini-row';
     const info=document.createElement('div');
-    const sub=[c.company&&c.company!==c.name?c.company:'',c.phone].filter(Boolean).join(' · ');
+    const subParts=[c.company&&c.company!==c.name?c.company:'',c.phone];
+    if(c.share!==undefined&&c.share!==null)subParts.push('quota '+c.share+'% ('+(c.shareOn==='repair'?'rip.':'tot.')+')');
+    const sub=subParts.filter(Boolean).join(' · ');
     info.innerHTML='<strong>'+c.name+'</strong>'+(sub?'<span style="color:var(--mu);font-size:12px"> · '+sub+'</span>':'');
     const btns=document.createElement('div');btns.style.cssText='display:flex;gap:6px';
     const bU=document.createElement('button');bU.className='btn sm';bU.textContent=T('use');bU.addEventListener('click',()=>{goTo('v-prev');if(g('inp-cust'))g('inp-cust').value=c.name;});
+    const bE=document.createElement('button');bE.className='btn sm';bE.textContent='✏️';bE.title='Modifica';bE.addEventListener('click',()=>startEditClient(c));
     const bD=document.createElement('button');bD.className='btn sm danger';bD.textContent='✕';bD.addEventListener('click',()=>{if(!confirm(T('confirmDelC')))return;clients=clients.filter(x=>x.id!==c.id);save();cloudDeleteClient(c.id);renderClients();});
-    btns.appendChild(bU);btns.appendChild(bD);row.appendChild(info);row.appendChild(btns);box.appendChild(row);
+    btns.appendChild(bU);btns.appendChild(bE);btns.appendChild(bD);row.appendChild(info);row.appendChild(btns);box.appendChild(row);
   });
 }
 
