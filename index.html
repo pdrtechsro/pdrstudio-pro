@@ -14,8 +14,8 @@
 <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png"/>
 <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png"/>
 <link rel="manifest" href="manifest.json"/>
-<meta name="app-version" content="3.2.2"/>
-<meta name="app-build" content="2026-05-16-E"/>
+<meta name="app-version" content="3.3.0"/>
+<meta name="app-build" content="2026-05-19-A"/>
 <title>PDRStudio</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -503,8 +503,8 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--sf2)}tr.sel t
 <div id="toast"></div>
 <script>
 /* ═══════════════ VERSIONE ═══════════════ */
-const APP_VERSION='3.2.2';
-const APP_BUILD='2026-05-16-E';
+const APP_VERSION='3.3.0';
+const APP_BUILD='2026-05-19-A';
 console.log('%c PDRStudio %cv'+APP_VERSION+' · build '+APP_BUILD,'background:#4F63FF;color:white;padding:2px 6px;border-radius:3px;font-weight:bold','color:#666;margin-left:4px');
 
 /* ═══════════════ SUPABASE CONFIG ═══════════════ */
@@ -556,8 +556,8 @@ DE:{navPrev:'Angebot',navAuto:'Fahrzeuge',navDash:'Dashboard',navCli:'Kunden',na
 const _DICT_TERMINATOR=1;
 
 /* ═══════════════ STATO ═══════════════ */
-const SK={p:'pdrstudio_p',c:'pdrstudio_c',s:'pdrstudio_s',mx:'pdrstudio_mx',dg:'pdrstudio_dg',cm:'pdrstudio_cm',ins:'pdrstudio_ins'};
-let practices=[], clients=[], campaigns=[], customInsurances=[];
+const SK={p:'pdrstudio_p',c:'pdrstudio_c',s:'pdrstudio_s',mx:'pdrstudio_mx',dg:'pdrstudio_dg',cm:'pdrstudio_cm',ins:'pdrstudio_ins',cv:'pdrstudio_cv'};
+let practices=[], clients=[], campaigns=[], customInsurances=[], customVehicles=[];
 let settings={company:'',tech:'',email:'',phone:'',vat:'',addr:'',cap:'',city:'',country:'',footer:'',uiLang:'IT',pdfLang:'IT',theme:'dark',coeff:1};
 let matrix=DEFAULT_MATRIX.map(r=>[...r]), deg={...DEFAULT_DEG};
 let PS={}, curMode='assicurativo', degCat='none', editId=null, editClientId=null, activeId=null, cliType='azienda', dashView='fiscal', activeCampaignId=null, manualTotal=null;
@@ -580,6 +580,7 @@ function load(){
   try{clients=JSON.parse(localStorage.getItem(SK.c)||'[]');}catch(e){clients=[];}
   try{campaigns=JSON.parse(localStorage.getItem(SK.cm)||'[]');}catch(e){campaigns=[];}
   try{customInsurances=JSON.parse(localStorage.getItem(SK.ins)||'[]');}catch(e){customInsurances=[];}
+  try{customVehicles=JSON.parse(localStorage.getItem(SK.cv)||'[]');}catch(e){customVehicles=[];}
   try{const s=JSON.parse(localStorage.getItem(SK.s)||'{}');settings={...settings,...s};}catch(e){}
   try{const mx=JSON.parse(localStorage.getItem(SK.mx)||'null');if(mx&&mx.length===DEFAULT_MATRIX.length)matrix=mx;}catch(e){}
   try{const d=JSON.parse(localStorage.getItem(SK.dg)||'null');if(d)deg={...deg,...d};}catch(e){}
@@ -589,6 +590,7 @@ function save(){
   localStorage.setItem(SK.c,JSON.stringify(clients));
   localStorage.setItem(SK.cm,JSON.stringify(campaigns));
   localStorage.setItem(SK.ins,JSON.stringify(customInsurances));
+  localStorage.setItem(SK.cv,JSON.stringify(customVehicles));
   localStorage.setItem(SK.s,JSON.stringify(settings));
   localStorage.setItem(SK.mx,JSON.stringify(matrix));
   localStorage.setItem(SK.dg,JSON.stringify(deg));
@@ -908,6 +910,9 @@ function doSave(){
   const campId=gv('inp-pcamp')||'';
   const insName=(curMode==='assicurativo')?gv('inp-ins').trim():'';
   if(insName)rememberInsurance(insName);
+  // memorizzo marca/modello custom se nuovi (per autocomplete futuro)
+  const brandIn=gv('inp-brand').trim(),modelIn=gv('inp-model').trim();
+  if(brandIn&&modelIn)rememberVehicle(brandIn,modelIn);
   const useManual=(curMode==='assicurativo'&&manualTotal!==null&&!isNaN(manualTotal));
   const finalTotal=useManual?manualTotal:r.total;
   const base={id:editId||uid(),createdAt:existing?existing.createdAt:now(),updatedAt:now(),quoteDate:gv('inp-date'),repairDate:gv('inp-rdate')||'',customerName:gv('inp-cust').trim(),insurance:insName,vehicleBrand:gv('inp-brand').trim(),vehicleModel:gv('inp-model').trim(),plate,vin,color:gv('inp-color').trim(),notes:gv('inp-notes').trim(),repairStatus:existing?existing.repairStatus:'Creata',billingStatus:existing?existing.billingStatus:'',pricingType:curMode,degCat,coeff:getCurrentCoeff(),campaignId:campId};
@@ -1500,14 +1505,38 @@ if(_g_btn_addcamp)_g_btn_addcamp.addEventListener('click',()=>{
 
 /* ═══════════════ AUTOCOMPLETE ═══════════════ */
 function drawSug(boxId,items,cb){const box=g(boxId);if(!box)return;box.innerHTML='';box.classList.toggle('hidden',!items.length);items.slice(0,14).forEach(v=>{const d=document.createElement('div');d.className='sw-item';d.textContent=v;d.addEventListener('mousedown',e=>{e.preventDefault();cb(v);box.classList.add('hidden');});box.appendChild(d);});}
-g('inp-brand').addEventListener('input',()=>{g('inp-model').value='';const v=gv('inp-brand').toLowerCase();drawSug('sug-brand',Object.keys(VEHICLES).filter(b=>b.toLowerCase().includes(v)).sort(),val=>{g('inp-brand').value=val;g('inp-model').value='';drawModels();});});
-g('inp-brand').addEventListener('focus',()=>{const v=gv('inp-brand').toLowerCase();drawSug('sug-brand',Object.keys(VEHICLES).filter(b=>b.toLowerCase().includes(v)).sort(),val=>{g('inp-brand').value=val;g('inp-model').value='';drawModels();});});
-function drawModels(){const brand=gv('inp-brand').trim(),v=gv('inp-model').toLowerCase();if(!brand||!VEHICLES[brand]){g('sug-model').classList.add('hidden');return;}drawSug('sug-model',(VEHICLES[brand]||[]).filter(m=>m.toLowerCase().includes(v)),val=>{g('inp-model').value=val;});}
+// Lista brand completa (predefiniti + custom utente, alfabetica, no duplicati)
+function getAllBrands(){
+  const set=new Set(Object.keys(VEHICLES));
+  customVehicles.forEach(v=>{if(v.brand)set.add(v.brand);});
+  return Array.from(set).sort((a,b)=>a.localeCompare(b));
+}
+// Lista modelli per una marca (predefiniti + custom)
+function getAllModels(brand){
+  if(!brand)return [];
+  const set=new Set(VEHICLES[brand]||[]);
+  customVehicles.filter(v=>v.brand===brand).forEach(v=>{if(v.model)set.add(v.model);});
+  return Array.from(set).sort((a,b)=>a.localeCompare(b));
+}
+g('inp-brand').addEventListener('input',()=>{g('inp-model').value='';const v=gv('inp-brand').toLowerCase();drawSug('sug-brand',getAllBrands().filter(b=>b.toLowerCase().includes(v)),val=>{g('inp-brand').value=val;g('inp-model').value='';drawModels();});});
+g('inp-brand').addEventListener('focus',()=>{const v=gv('inp-brand').toLowerCase();drawSug('sug-brand',getAllBrands().filter(b=>b.toLowerCase().includes(v)),val=>{g('inp-brand').value=val;g('inp-model').value='';drawModels();});});
+function drawModels(){const brand=gv('inp-brand').trim(),v=gv('inp-model').toLowerCase();const models=getAllModels(brand);if(!brand||!models.length){g('sug-model').classList.add('hidden');return;}drawSug('sug-model',models.filter(m=>m.toLowerCase().includes(v)),val=>{g('inp-model').value=val;});}
 g('inp-model').addEventListener('input',drawModels);g('inp-model').addEventListener('focus',drawModels);
 g('inp-color').addEventListener('input',()=>{const v=gv('inp-color').toLowerCase();drawSug('sug-color',COLORS.filter(c=>c.toLowerCase().includes(v)),val=>{g('inp-color').value=val;});});
 g('inp-color').addEventListener('focus',()=>drawSug('sug-color',COLORS,val=>{g('inp-color').value=val;}));
 function allInsurances(){const set=new Set([...INSURANCES,...customInsurances.filter(Boolean)]);return [...set].sort((a,b)=>a.localeCompare(b));}
 function rememberInsurance(name){if(!name)return;const n=name.trim();if(!n)return;const exists=[...INSURANCES,...customInsurances].some(x=>x.toLowerCase()===n.toLowerCase());if(!exists){customInsurances.push(n);save();cloudAddInsurance(n);}}
+function rememberVehicle(brand,model){
+  if(!brand||!model)return;
+  const b=brand.trim(),m=model.trim();if(!b||!m)return;
+  // verifico se la coppia esiste già (in predefiniti o custom)
+  const inPredef=VEHICLES[b]&&VEHICLES[b].some(x=>x.toLowerCase()===m.toLowerCase());
+  const inCustom=customVehicles.some(v=>v.brand.toLowerCase()===b.toLowerCase()&&v.model.toLowerCase()===m.toLowerCase());
+  if(inPredef||inCustom)return;
+  // aggiungo
+  customVehicles.push({brand:b,model:m});
+  save();cloudAddVehicle(b,m);
+}
 if(g('inp-ins')){
   g('inp-ins').addEventListener('input',()=>{const v=gv('inp-ins').toLowerCase();drawSug('sug-ins',allInsurances().filter(c=>c.toLowerCase().includes(v)),val=>{g('inp-ins').value=val;});});
   g('inp-ins').addEventListener('focus',()=>drawSug('sug-ins',allInsurances(),val=>{g('inp-ins').value=val;}));
@@ -1596,7 +1625,7 @@ g('btn-saveset').addEventListener('click',()=>{
   deg.A=+gv('deg-A-set')||0;deg.B=+gv('deg-B-set')||0;deg.C=+gv('deg-C-set')||0;
   save();cloudSaveSettings();applyTheme(settings.theme);applyI18n();toast((DICT[settings.uiLang]||DICT.IT).setsSaved);
 });
-g('btn-clearall').addEventListener('click',async()=>{if(!confirm(T('confirmClear')))return;practices=[];clients=[];campaigns=[];customInsurances=[];save();await cloudWipeAll();renderTable();g('detail-box').classList.add('hidden');activeId=null;toast(T('dataCleared'));});
+g('btn-clearall').addEventListener('click',async()=>{if(!confirm(T('confirmClear')))return;practices=[];clients=[];campaigns=[];customInsurances=[];customVehicles=[];save();await cloudWipeAll();renderTable();g('detail-box').classList.add('hidden');activeId=null;toast(T('dataCleared'));});
 
 /* ═══════════════ AUTH ═══════════════ */
 let authMode='login'; // 'login' | 'signup' | 'forgot'
@@ -1674,7 +1703,7 @@ async function doLogout(){
   try{await supa.auth.signOut();}catch(e){console.error('signOut error:',e);}
   currentUser=null;
   // pulisco stato e localStorage del client (i dati cloud restano sicuri)
-  practices=[];clients=[];campaigns=[];customInsurances=[];
+  practices=[];clients=[];campaigns=[];customInsurances=[];customVehicles=[];
   try{Object.values(SK).forEach(k=>localStorage.removeItem(k));}catch(e){}
   const ue=document.getElementById('user-email');if(ue)ue.textContent='';
   setSyncStatus('offline','offline');
@@ -1689,7 +1718,7 @@ async function onAuthenticated(user){
   currentUser=user;
   document.getElementById('user-email').textContent=user.email||'';
   // FIX lampo dati vecchi: pulisco stato in memoria + cache prima di mostrare l'app
-  practices=[];clients=[];campaigns=[];customInsurances=[];
+  practices=[];clients=[];campaigns=[];customInsurances=[];customVehicles=[];
   try{Object.values(SK).forEach(k=>localStorage.removeItem(k));}catch(e){}
   // ripristino dei default settings/matrix/deg
   settings=Object.assign({},DEFAULT_SETTINGS);matrix=JSON.parse(JSON.stringify(DEFAULT_MATRIX));deg=Object.assign({},DEFAULT_DEG);
@@ -1745,6 +1774,9 @@ async function flushQueue(){
       }else if(op.op==='upsertInsurance'){
         const {error}=await supa.from('custom_insurances').upsert({user_id:currentUser.id,name:op.name},{onConflict:'user_id,name'});
         if(error)throw error;
+      }else if(op.op==='upsertVehicle'){
+        const {error}=await supa.from('custom_vehicles').upsert({user_id:currentUser.id,brand:op.brand,model:op.model},{onConflict:'user_id,brand,model'});
+        if(error)throw error;
       }else if(op.op==='delete'){
         const {error}=await supa.from(op.table).delete().eq('id',op.id);
         if(error)throw error;
@@ -1769,23 +1801,26 @@ async function cloudPullAll(){
   if(!supa||!currentUser){load();return;}
   setSyncStatus('busy','caricamento…');
   try{
-    const [pr,cl,cm,ins,st]=await Promise.all([
+    const [pr,cl,cm,ins,cv,st]=await Promise.all([
       supa.from('practices').select('id,data,updated_at').eq('user_id',currentUser.id).order('updated_at',{ascending:false}),
       supa.from('clients').select('id,data,updated_at').eq('user_id',currentUser.id).order('updated_at',{ascending:false}),
       supa.from('campaigns').select('id,data,updated_at').eq('user_id',currentUser.id),
       supa.from('custom_insurances').select('name').eq('user_id',currentUser.id),
+      supa.from('custom_vehicles').select('brand,model').eq('user_id',currentUser.id),
       supa.from('user_settings').select('*').eq('user_id',currentUser.id).maybeSingle()
     ]);
     if(pr.error)throw pr.error;
     if(cl.error)throw cl.error;
     if(cm.error)throw cm.error;
     if(ins.error)throw ins.error;
+    if(cv.error&&cv.error.code!=='42P01')throw cv.error; // ignora se tabella non esiste ancora
     if(st.error)throw st.error;
     // popolo lo stato dal cloud
     practices=(pr.data||[]).map(r=>({...r.data,id:r.id}));
     clients=(cl.data||[]).map(r=>({...r.data,id:r.id}));
     campaigns=(cm.data||[]).map(r=>({...r.data,id:r.id}));
     customInsurances=(ins.data||[]).map(r=>r.name);
+    customVehicles=(cv.data||[]).map(r=>({brand:r.brand,model:r.model}));
     if(st.data){
       if(st.data.settings)settings={...settings,...st.data.settings};
       if(st.data.matrix&&Array.isArray(st.data.matrix)&&st.data.matrix.length===DEFAULT_MATRIX.length)matrix=st.data.matrix;
@@ -1831,6 +1866,10 @@ async function cloudAddInsurance(name){
   if(!currentUser||!name)return;
   await enqueueOp({op:'upsertInsurance',name});
 }
+async function cloudAddVehicle(brand,model){
+  if(!currentUser||!brand||!model)return;
+  await enqueueOp({op:'upsertVehicle',brand,model});
+}
 async function cloudSaveSettings(){
   if(!currentUser)return;
   await enqueueOp({op:'upsertSettings',settings:{...settings},matrix:[...matrix],deg:{...deg}});
@@ -1845,7 +1884,8 @@ async function cloudWipeAll(){
       supa.from('practices').delete().eq('user_id',currentUser.id),
       supa.from('clients').delete().eq('user_id',currentUser.id),
       supa.from('campaigns').delete().eq('user_id',currentUser.id),
-      supa.from('custom_insurances').delete().eq('user_id',currentUser.id)
+      supa.from('custom_insurances').delete().eq('user_id',currentUser.id),
+      supa.from('custom_vehicles').delete().eq('user_id',currentUser.id)
     ]);
     setSyncStatus('ok','sync ok');
   }catch(e){
